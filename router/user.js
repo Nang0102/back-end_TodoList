@@ -1,22 +1,10 @@
-// const express = require("express");
-// const userRouter = express.Router();
-
-// userRouter.post('/sign-up',(req,res)=>{
-
-// })
-// module.exports = userRouter;
 const express = require("express");
 const userRouter = express.Router();
 const { ObjectId } = require("mongodb");
 const { db } = require("../db");
 // here we create our Route
 userRouter.post("/", async (req, res) => {
-  // const User = {
-  //     password: req.body.password,
-  //     role:req.body.role,
-  //     username:req.body.username
-  // };
-  const User = ({ username, password, role } = req.body);
+  const User = ({ username, password, role, email } = req.body);
   const result = await db.users.insertOne(User);
 
   if (!result) {

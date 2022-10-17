@@ -2,16 +2,9 @@ const express = require("express");
 const userRouter = express.Router();
 const { ObjectId } = require("mongodb");
 const { db } = require("../db");
-<<<<<<< HEAD
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const jwtKey = require("./key");
-=======
-// here we create our Route
-userRouter.post("/", async (req, res) => {
-  const User = ({ username, password, role, email } = req.body);
-  const result = await db.users.insertOne(User);
->>>>>>> main
 
 // here we create our Route
 userRouter.post("/sign-up", async (req, res) => {
@@ -45,7 +38,6 @@ userRouter.post("/login", async (req, res) => {
   }
 
   let userData = await handleUserLogin(email, username, password);
-  // res.json({ token: token });
   return res.json({
     errCode: userData.errCode,
     message: userData.errMessage,

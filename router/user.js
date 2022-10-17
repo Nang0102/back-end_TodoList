@@ -1,37 +1,109 @@
-// const express = require("express");
-// const userRouter = express.Router();
-
-// userRouter.post('/sign-up',(req,res)=>{
-
-// })
-// module.exports = userRouter;
 const express = require("express");
 const userRouter = express.Router();
 const { ObjectId } = require("mongodb");
 const { db } = require("../db");
-// here we create our Route
-userRouter.post("/", async (req, res) => {
-  // const User = {
-  //     password: req.body.password,
-  //     role:req.body.role,
-  //     username:req.body.username
-  // };
-  const User = ({ username, password, role } = req.body);
-  const result = await db.users.insertOne(User);
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const jwtKey = require("./key");
 
-  if (!result) {
-    res.json({
-      status: "FAILED",
-      message: "Không thêm được tài khoản",
+// here we create our Route
+userRouter.post("/sign-up", async (req, res) => {
+  const User = ({ username, role, password, email } = req.body);
+  console.log("abc", req.body);
+  const saltRounds = 10;
+  await bcrypt.hash(password, saltRounds, async function (err, hash) {
+    const result = await db.users.insertOne({
+      username,
+      password: hash,
+      role,
+      email,
     });
-  } else {
-    res.json({
-      status: "SUCCESS",
-      message: "Thêm tài khoản thành công",
-      data: User,
+    res.status(201);
+    res.json(result);
+    if (err) {
+      res.status(500);
+      res.json(err);
+    }
+  });
+  return;
+});
+
+userRouter.post("/login", async (req, res) => {
+  const { email, username, password } = req.body;
+  if (!email || !username || !password) {
+    return res.status(500).json({
+      errCode: 1,
+      message: "Missing input parameters!",
     });
   }
+
+  let userData = await handleUserLogin(email, username, password);
+  // res.json({ token: token });
+  return res.json({
+    errCode: userData.errCode,
+    message: userData.errMessage,
+    user: userData.user ? userData.user : {},
+
+    token: userData.token ? userData.token : "",
+  });
 });
+
+let handleUserLogin = async (email, username, password) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let userData = {};
+      let isExist = await checkUserEmail(email);
+      if (isExist) {
+        let user = await db.users.findOne({
+          email,
+        });
+        if (user) {
+          let check = await bcrypt.compare(password, user.password);
+          if (check && username === user.username) {
+            const token = jwt.sign(user, jwtKey);
+
+            userData.errCode = 0;
+            userData.errMessage = "ok";
+
+            userData.token = token;
+
+            delete user.password;
+            userData.user = user;
+          } else {
+            userData.errCode = 3;
+            userData.errMessage = "Wrong username or password!";
+          }
+        } else {
+          userData.errCode = 2;
+          userData.errMessage = "User is not found!";
+          resolve();
+        }
+      } else {
+        userData.errCode = 1;
+        userData.errMessage = "Email is not existed!";
+      }
+      resolve(userData);
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+let checkUserEmail = (userEmail) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await db.users.findOne({ email: userEmail });
+      if (user) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 // get the
 
 userRouter.get("/", async (req, res) => {

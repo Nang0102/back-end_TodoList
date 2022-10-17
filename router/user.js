@@ -125,6 +125,14 @@ userRouter.get("/", async (req, res) => {
 //get the
 userRouter.get("/:id", async (req, res) => {
   const id = req.params.id;
+  const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
+  if (!checkForHexRegExp.test(id)) {
+    res.json({
+      status: "Failed",
+      message: "Key not valid",
+    });
+    return;
+  }
   const result = await db.users
     .find({
       _id: ObjectId(id),

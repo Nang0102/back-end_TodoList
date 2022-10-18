@@ -9,6 +9,7 @@ const jwtKey = require("./key");
 // here we create our Route
 userRouter.post("/sign-up", async (req, res) => {
   const { username, password, email, role } = req.body;
+  console.log("body ", req.body);
 
   if (!email || !username || !password) {
     return res.status(500).json({
@@ -41,6 +42,11 @@ let handleUserSignup = async (email, username, password, role) => {
       let isExist = await checkUserEmail(email);
       if (!isExist) {
         let user = await db.users.findOne({ email });
+
+        if (user) {
+          res.status(409);
+          res.json("Email is already in use", err);
+        }
         if (!user) {
           const saltRounds = 10;
           await bcrypt.hash(password, saltRounds, async function (err, hash) {
@@ -93,15 +99,15 @@ let handleUserSignup = async (email, username, password, role) => {
 // });
 
 userRouter.post("/login", async (req, res) => {
-  const { email, username, password } = req.body;
-  if (!email || !username || !password) {
-    return res.status(500).json({
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(401).json({
       errCode: 1,
       message: "Missing input parameters!",
     });
   }
 
-  let userData = await handleUserLogin(email, username, password);
+  let userData = await handleUserLogin(email, password);
   return res.json({
     errCode: userData.errCode,
     message: userData.errMessage,
@@ -111,7 +117,7 @@ userRouter.post("/login", async (req, res) => {
   });
 });
 
-let handleUserLogin = async (email, username, password) => {
+let handleUserLogin = async (email, password) => {
   return new Promise(async (resolve, reject) => {
     try {
       let userData = {};
@@ -122,7 +128,7 @@ let handleUserLogin = async (email, username, password) => {
         });
         if (user) {
           let check = await bcrypt.compare(password, user.password);
-          if (check && username === user.username) {
+          if (check) {
             const token = jwt.sign(user, jwtKey);
 
             userData.errCode = 0;
@@ -132,17 +138,18 @@ let handleUserLogin = async (email, username, password) => {
 
             delete user.password;
             userData.user = user;
-          } else {
-            userData.errCode = 3;
-            userData.errMessage = "Wrong username or password!";
           }
+          //  else {
+          //   userData.errCode = 3;
+          //   userData.errMessage = "Wrong password!";
+          // }
         } else {
-          userData.errCode = 2;
+          userData.errCode = 404;
           userData.errMessage = "User is not found!";
           resolve();
         }
       } else {
-        userData.errCode = 1;
+        // userData.errCode = 2;
         userData.errMessage = "Email is not existed!";
       }
       resolve(userData);
@@ -152,10 +159,10 @@ let handleUserLogin = async (email, username, password) => {
   });
 };
 
-let checkUserEmail = (userEmail) => {
+let checkUserEmail = (email) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let user = await db.users.findOne({ email: userEmail });
+      let user = await db.users.findOne({ email });
       if (user) {
         resolve(true);
       } else {

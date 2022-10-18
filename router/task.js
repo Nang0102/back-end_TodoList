@@ -14,9 +14,12 @@ todoRouter.get("/", async (req, res) => {
         })
         .toArray();
     } else if (enddate) {
-      todo = await db.todos.find({
-        enddate: enddate,
-      });
+      console.log("date", enddate);
+      todo = await db.todos.dates
+        .find({
+          enddate: { $type: "date" },
+        })
+        .pretty();
     } else {
       todo = await db.todos.find({}).toArray();
     }

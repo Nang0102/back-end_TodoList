@@ -8,25 +8,89 @@ const jwtKey = require("./key");
 
 // here we create our Route
 userRouter.post("/sign-up", async (req, res) => {
-  const User = ({ username, role, password, email } = req.body);
-  console.log("abc", req.body);
-  const saltRounds = 10;
-  await bcrypt.hash(password, saltRounds, async function (err, hash) {
-    const result = await db.users.insertOne({
-      username,
-      password: hash,
-      role,
-      email,
+  const { username, password, email, role } = req.body;
+
+  if (!email || !username || !password) {
+    return res.status(500).json({
+      errCode: 1,
+      message: "Missing input parameters!",
     });
-    res.status(201);
-    res.json(result);
-    if (err) {
-      res.status(500);
-      res.json(err);
+  }
+  if (
+    !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+      email
+    )
+  ) {
+    return res.status(500).json({
+      errCode: 1,
+      message: "Email is invalid",
+    });
+  }
+
+  let userData = await handleUserSignup(email, username, password, role);
+  return res.status(200).json({
+    errCode: userData.errCode,
+    message: userData.errMessage,
+  });
+});
+
+let handleUserSignup = async (email, username, password, role) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let userData = {};
+      let isExist = await checkUserEmail(email);
+      if (!isExist) {
+        let user = await db.users.findOne({ email });
+        if (!user) {
+          const saltRounds = 10;
+          await bcrypt.hash(password, saltRounds, async function (err, hash) {
+            const respond = await db.users.insertOne({
+              email,
+              username,
+              password: hash,
+              role,
+            });
+            userData.errCode = 0;
+            userData.errMessage = "ok";
+            delete password;
+            if (err) {
+              res.status(500);
+              res.json(err);
+            }
+          });
+        } else {
+          userData.errCode = 2;
+          userData.message = "User already exists!";
+          resolve();
+        }
+      } else {
+        userData.errCode = 1;
+        userData.message = "Email already exists!";
+      }
+      resolve(userData);
+    } catch (error) {
+      reject(error);
     }
   });
-  return;
-});
+};
+
+//   const saltRounds = 10;
+//   await bcrypt.hash(password, saltRounds, async function (err, hash) {
+//     const result = await db.users.insertOne({
+//       username,
+//       password: hash,
+//       role,
+//       email,
+//     });
+//     res.status(201);
+//     res.json(result);
+//     if (err) {
+//       res.status(500);
+//       res.json(err);
+//     }
+//   });
+//   return;
+// });
 
 userRouter.post("/login", async (req, res) => {
   const { email, username, password } = req.body;

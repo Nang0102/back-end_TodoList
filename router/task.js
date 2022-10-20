@@ -5,7 +5,7 @@ const { db } = require("../db");
 
 todoRouter.get("/", async (req, res) => {
   try {
-    const { level, enddate } = req.headers;
+    const { level, enddate, startday } = req.headers;
     let todo;
     if (level) {
       todo = await db.todos
@@ -15,11 +15,17 @@ todoRouter.get("/", async (req, res) => {
         .toArray();
     } else if (enddate) {
       console.log("date", enddate);
-      todo = await db.todos.dates
+      todo = await db.todos
         .find({
-          enddate: { $type: "date" },
+          enddate: new Date(enddate),
         })
-        .pretty();
+        .toArray();
+    } else if (startday) {
+      todo = await db.todos
+        .find({
+          startday: new Date(startday),
+        })
+        .toArray();
     } else {
       todo = await db.todos.find({}).toArray();
     }

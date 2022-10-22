@@ -75,6 +75,7 @@ userRouter.post("/login", async (req, res) => {
     let userData = await handleUserLogin(email, password);
     console.log("user", userData);
     res.status(200).json(userData);
+    // res.redirect("/");
   } catch (error) {
     res.status(error.statusCode).json({ message: error.message });
   }
@@ -145,7 +146,7 @@ userRouter.get("/", async (req, res) => {
 });
 
 //get the
-userRouter.get("/:id", async (req, res) => {
+userRouter.get("/login/:id", async (req, res) => {
   const id = req.params.id;
   const checkForHexRegExp = new RegExp("^[0-9a-fA-F]{24}$");
   if (!checkForHexRegExp.test(id)) {

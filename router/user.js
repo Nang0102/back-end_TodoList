@@ -84,25 +84,27 @@ userRouter.post("/login", async (req, res) => {
 let handleUserLogin = async (email, password) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let isExist = await checkUserEmail(email);
-      if (isExist) {
-        let user = await db.users.findOne({
-          email,
-        });
+      let user = await checkUserEmail(email);
+      // if (isExist) {
+      //   let user = await db.users.findOne({
+      //     email,
+      //   });
 
-        if (user) {
-          let check = await bcrypt.compareSync(password, user.password);
-          if (check) {
-            const token = jwt.sign(user, jwtKey);
-            resolve(token);
-          } else {
-            reject({ statusCode: 409, message: "Wrong password!" });
-          }
+      if (user) {
+        let check = await bcrypt.compareSync(password, user.password);
+        if (check) {
+          const token = jwt.sign(user, jwtKey);
+          console.log("username", user.username);
+          resolve({ token: token, user: user.username });
+        } else {
+          reject({ statusCode: 409, message: "Wrong password!" });
         }
-      } else {
-        reject({ statusCode: 401, message: "Email is not existed!" });
       }
     } catch (e) {
+      // else {
+      //   reject({ statusCode: 401, message: "Email is not existed!" });
+      // }
+      // }
       reject({
         statusCode: 500,
         message: " Error",
@@ -116,12 +118,12 @@ let checkUserEmail = (userEmail) => {
     try {
       let user = await db.users.findOne({ email: userEmail });
       if (user) {
-        resolve(true);
+        resolve(user);
       } else {
         resolve(false);
       }
     } catch (error) {
-      reject(error);
+      reject({ statusCode: 401, message: "Email is not existed!" });
     }
   });
 };

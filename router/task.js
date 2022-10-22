@@ -52,6 +52,7 @@ todoRouter.post("/", async (req, res) => {
     process,
     title,
     userId,
+    type,
   } = req.body;
 
   if (
@@ -62,7 +63,8 @@ todoRouter.post("/", async (req, res) => {
     !level ||
     !process ||
     !title ||
-    !userId
+    !userId ||
+    !type
   ) {
     res.status(500).json("Task creation failed");
   }
@@ -76,7 +78,8 @@ todoRouter.post("/", async (req, res) => {
       level,
       process,
       title,
-      userId
+      userId,
+      type
     );
     console.log("todoData", todoData);
     res.status(200).json(todoData);
@@ -93,7 +96,8 @@ let handleTodo = async (
   level,
   process,
   title,
-  userId
+  userId,
+  type
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -109,6 +113,7 @@ let handleTodo = async (
           process,
           title,
           userId,
+          type,
         });
         resolve(respond);
       } else {

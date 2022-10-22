@@ -85,11 +85,6 @@ let handleUserLogin = async (email, password) => {
   return new Promise(async (resolve, reject) => {
     try {
       let user = await checkUserEmail(email);
-      // if (isExist) {
-      //   let user = await db.users.findOne({
-      //     email,
-      //   });
-
       if (user) {
         let check = await bcrypt.compareSync(password, user.password);
         if (check) {
@@ -101,10 +96,6 @@ let handleUserLogin = async (email, password) => {
         }
       }
     } catch (e) {
-      // else {
-      //   reject({ statusCode: 401, message: "Email is not existed!" });
-      // }
-      // }
       reject({
         statusCode: 500,
         message: " Error",

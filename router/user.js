@@ -63,7 +63,6 @@ let handleUserSignup = async (email, username, password, role) => {
     }
   });
 };
-
 userRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -169,9 +168,23 @@ userRouter.get("/login/:id", async (req, res) => {
   }
 });
 
+// userRouter.get("/", async (req, res) => {
+//   try {
+//     const {username, DateOfBirth, profession,email } = req.headers
+//     let user
+//     if(user){
+//       user = await db.users.find({email:email}).toArray()
+//     } else if(username){
+
+//     }
+//   } catch (error) {
+//     res.status(500).json("Error: " + error)
+//   }
+// });
+
 //get the
-userRouter.put("/:id", async (req, res) => {
-  const id = req.params.id;
+userRouter.put("/", async (req, res) => {
+  const id = req.headers.id;
   const body = req.body;
   const filter = {
     _id: new ObjectId(id),
@@ -179,7 +192,8 @@ userRouter.put("/:id", async (req, res) => {
   const updateDoc = {
     $set: body,
   };
-  const result = await db.users.updateOne(filter, updateDoc);
+
+  const result = await db.users.updateOne(filter, updateDoc, { upsert: true });
 
   if (!result) {
     res.json({

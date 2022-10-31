@@ -5,7 +5,8 @@ const { db } = require("../db");
 
 todoRouter.get("/", async (req, res) => {
   try {
-    const { id, level, enddate, startday } = req.headers;
+    const { id, level, enddate, startday, title, type, icontype, userId } =
+      req.headers;
     let todo;
     if (level) {
       todo = await db.todos
@@ -30,8 +31,25 @@ todoRouter.get("/", async (req, res) => {
       todo = await db.todos.findOne({
         _id: new ObjectId(id),
       });
+    } else if (title) {
+      todo = await db.todos.findOne({
+        title: title,
+      });
+    } else if (userId) {
+      todo = await db.todos.findOne({
+        userId: userId,
+      });
+    } else if (type) {
+      todo = await db.todos.findOne({
+        type: type,
+      });
+    } else if (icontype) {
+      todo = await db.todos.findOne({
+        icontype: icontype,
+      });
     } else {
-      todo = await db.todos.find({}).toArray();
+      todo = await db.items.find({}).toArray();
+      // todo = await db.todos.find({}).toArray();
     }
     res.status(200);
     res.json(todo);
@@ -49,10 +67,11 @@ todoRouter.post("/", async (req, res) => {
     enddate,
     startday,
     level,
-    process,
     title,
     userId,
     type,
+    icontype,
+    itemId,
   } = req.body;
 
   if (
@@ -61,12 +80,13 @@ todoRouter.post("/", async (req, res) => {
     !enddate ||
     !startday ||
     !level ||
-    !process ||
     !title ||
     !userId ||
-    !type
+    !type ||
+    !icontype ||
+    !itemId
   ) {
-    res.status(500).json("Task creation failed");
+    res.status(500).json("Task creation failed: " + error);
   }
 
   try {
@@ -76,10 +96,11 @@ todoRouter.post("/", async (req, res) => {
       enddate,
       startday,
       level,
-      process,
       title,
       userId,
-      type
+      type,
+      icontype,
+      itemId
     );
     console.log("todoData", todoData);
     res.status(200).json(todoData);
@@ -94,10 +115,11 @@ let handleTodo = async (
   enddate,
   startday,
   level,
-  process,
   title,
   userId,
-  type
+  type,
+  icontype,
+  itemId
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -110,10 +132,11 @@ let handleTodo = async (
           enddate,
           startday,
           level,
-          process,
           title,
           userId,
           type,
+          icontype,
+          itemId,
         });
         resolve(respond);
       } else {
@@ -122,7 +145,7 @@ let handleTodo = async (
     } catch (error) {
       reject({
         statusCode: 500,
-        message: " Error",
+        message: " Error: " + error,
       });
     }
   });
@@ -144,10 +167,12 @@ let checkUserId = (userIdreq) => {
 };
 
 //update task
-todoRouter.put("/", async (req, res) => {
+todoRouter.put("", async (req, res) => {
   try {
     const id = req.headers.id;
+
     const body = req.body;
+
     const filter = {
       _id: new ObjectId(id),
     };
@@ -157,7 +182,44 @@ todoRouter.put("/", async (req, res) => {
     const todo = await db.todos.updateOne(filter, updateDoc);
     res.status(200).json(todo);
   } catch (error) {
-    res.status(500).json("Some thing went wrong!");
+    res.status(500).json("Some thing went wrong!" + error);
+  }
+});
+
+//statistic
+todoRouter.get("/statistic", async (req, res) => {
+  try {
+    console.log("req.headers: ", req.headers);
+    const userId = req.headers.userid;
+
+    if (userId) {
+      const checkUserId = await db.todos
+        .find({
+          userId: userId,
+        })
+        .toArray();
+      // const result = checkUserId.length;
+      // console.log(result);
+      console.log("checkUserId: ", checkUserId);
+      const enddate = req.headers.enddate;
+      // console.log("req", req.headers);
+      // console.log("end", enddate1);
+      const checkMonth = await db.todos
+        .find({
+          enddate: new Date(checkUserId.enddate),
+        })
+        .toArray();
+      // let month = checkMonth.getMonth();
+      // console.log("month", month);
+      console.log("Date", checkUserId.enddate);
+      console.log("Date2", new Date(checkUserId.enddate));
+      console.log("End2", enddate);
+      console.log("month", checkMonth);
+    }
+
+    res.status(200).json("Successful!");
+  } catch (error) {
+    res.status(500).json("Some thing went wrong: " + error);
   }
 });
 

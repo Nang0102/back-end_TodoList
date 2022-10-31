@@ -5,8 +5,9 @@ const { db } = require("../db");
 
 todoRouter.get("/", async (req, res) => {
   try {
-    const { id, level, enddate, startday, title, type, icontype, userId } =
-      req.headers;
+    const { id, level, enddate, startday, title, type, icontype } = req.headers;
+    const userId = req.headers.userid;
+    console.log("head", req.headers);
     let todo;
     if (level) {
       todo = await db.todos
@@ -39,6 +40,7 @@ todoRouter.get("/", async (req, res) => {
       todo = await db.todos.findOne({
         userId: userId,
       });
+      console.log("todoUserId", todo);
     } else if (type) {
       todo = await db.todos.findOne({
         type: type,
@@ -48,8 +50,9 @@ todoRouter.get("/", async (req, res) => {
         icontype: icontype,
       });
     } else {
-      todo = await db.items.find({}).toArray();
-      // todo = await db.todos.find({}).toArray();
+      // todo = await db.items.find({}).toArray();
+      todo = await db.todos.find({}).toArray();
+      console.log("todoAr", todo);
     }
     res.status(200);
     res.json(todo);
@@ -192,32 +195,62 @@ todoRouter.get("/statistic", async (req, res) => {
     console.log("req.headers: ", req.headers);
     const userId = req.headers.userid;
 
+    let percent = 0;
+
     if (userId) {
-      const checkUserId = await db.todos
+      const tasks = await db.todos
         .find({
           userId: userId,
         })
         .toArray();
       // const result = checkUserId.length;
       // console.log(result);
-      console.log("checkUserId: ", checkUserId);
-      const enddate = req.headers.enddate;
-      // console.log("req", req.headers);
-      // console.log("end", enddate1);
-      const checkMonth = await db.todos
-        .find({
-          enddate: new Date(checkUserId.enddate),
-        })
-        .toArray();
-      // let month = checkMonth.getMonth();
-      // console.log("month", month);
-      console.log("Date", checkUserId.enddate);
-      console.log("Date2", new Date(checkUserId.enddate));
-      console.log("End2", enddate);
-      console.log("month", checkMonth);
+      console.log("checkUserId: ", tasks);
+      const listTasks = [];
+      for (let i = 0; i < tasks.length; i++) {
+        console.log("enddateTask: ", tasks[i].enddate);
+        let endDate = tasks[i].enddate;
+        console.log("enddate: ", endDate);
+
+        endDate = new Date(endDate);
+        Year = endDate.getFullYear();
+        Month = endDate.getMonth() + 1;
+        console.log("year: ", Year);
+        console.log("Month: ", Month);
+
+        const monthReq = req.body.Month;
+        const yearReq = req.body.year;
+
+        console.log("monthReq: ", monthReq);
+        console.log("yearReq: ", yearReq);
+
+        if (Year == yearReq && Month == monthReq) {
+          listTasks.push(tasks[i]);
+        }
+      }
+      console.log("listTasks: ", listTasks);
+
+      const totalTasks = listTasks.length;
+      console.log("totalTasks: ", totalTasks);
+
+      const listDoneTasks = [];
+      for (let i = 0; i < listTasks.length; i++) {
+        let completeTask = listTasks[i].complete;
+        if (completeTask === "Yes") {
+          listDoneTasks.push(completeTask);
+        }
+      }
+      const totalListDoneTask = listDoneTasks.length;
+
+      console.log("listDoneTasks: ", listDoneTasks);
+
+      percent = (totalListDoneTask / totalTasks) * 100;
+      console.log("percent", percent);
+
+      // console.log("Date", endDate);
     }
 
-    res.status(200).json("Successful!");
+    res.status(200).json({ " Successful": percent });
   } catch (error) {
     res.status(500).json("Some thing went wrong: " + error);
   }

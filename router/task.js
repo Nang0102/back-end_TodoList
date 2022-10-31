@@ -7,53 +7,93 @@ todoRouter.get("/", async (req, res) => {
   try {
     const { id, level, enddate, startday, title, type, icontype } = req.headers;
     const userId = req.headers.userid;
-    console.log("head", req.headers);
     let todo;
+    // if (level) {
+    //   todo = await db.todos
+    //     .find({
+    //       level: level,
+    //     })
+    //     .toArray();
+    // } else if (enddate) {
+    //   console.log("date", enddate);
+    //   todo = await db.todos
+    //     .find({
+    //       enddate: new Date(enddate),
+    //     })
+    //     .toArray();
+    // } else if (startday) {
+    //   todo = await db.todos
+    //     .find({
+    //       startday: new Date(startday),
+    //     })
+    //     .toArray();
+    // } else if (id) {
+    //   todo = await db.todos.findOne({
+    //     _id: new ObjectId(id),
+    //   });
+    // } else if (title) {
+    //   todo = await db.todos.findOne({
+    //     title: title,
+    //   });
+    // } else if (userId) {
+    //   todo = await db.todos.findOne({
+    //     userId: userId,
+    //   });
+    //   console.log("todoUserId", todo);
+    // } else if (type) {
+    //   todo = await db.todos.findOne({
+    //     type: type,
+    //   });
+    //   console.log("type", type);
+    // } else if (icontype) {
+    //   todo = await db.todos.findOne({
+    //     icontype: icontype,
+    //   });
+    // } else {
+    //   // todo = await db.items.find({}).toArray();
+    //   todo = await db.todos.find({}).toArray();
+    //   console.log("todoAr", todo);
+    // }
+    const query = {};
     if (level) {
-      todo = await db.todos
-        .find({
-          level: level,
-        })
-        .toArray();
-    } else if (enddate) {
-      console.log("date", enddate);
-      todo = await db.todos
-        .find({
-          enddate: new Date(enddate),
-        })
-        .toArray();
-    } else if (startday) {
-      todo = await db.todos
-        .find({
-          startday: new Date(startday),
-        })
-        .toArray();
-    } else if (id) {
-      todo = await db.todos.findOne({
-        _id: new ObjectId(id),
-      });
-    } else if (title) {
-      todo = await db.todos.findOne({
-        title: title,
-      });
-    } else if (userId) {
-      todo = await db.todos.findOne({
-        userId: userId,
-      });
-      console.log("todoUserId", todo);
-    } else if (type) {
-      todo = await db.todos.findOne({
-        type: type,
-      });
-    } else if (icontype) {
-      todo = await db.todos.findOne({
-        icontype: icontype,
-      });
-    } else {
-      // todo = await db.items.find({}).toArray();
-      todo = await db.todos.find({}).toArray();
-      console.log("todoAr", todo);
+      query["level"] = level;
     }
+    if (enddate) {
+      query["enddate"] = enddate;
+    }
+    if (startday) {
+      query["startday"] = startday;
+    }
+    if (type) {
+      query["type"] = type;
+    }
+    if (title) {
+      query["title"] = title;
+    }
+    if (id) {
+      query["_id"] = new ObjectId(id);
+    }
+    if (icontype) {
+      query["icontype"] = icontype;
+    }
+    if (userId) {
+      query["userId"] = userId;
+    }
+
+    todo = await db.todos.find(query).toArray();
+    if (
+      !level &&
+      !enddate &&
+      !startday &&
+      !type &&
+      !title &&
+      !id &&
+      !icontype &&
+      !userId
+    ) {
+      todo = await db.items.find({}).toArray();
+    }
+
     res.status(200);
     res.json(todo);
   } catch (error) {
@@ -76,6 +116,7 @@ todoRouter.post("/", async (req, res) => {
     icontype,
     itemId,
   } = req.body;
+  console.log("req:", req.body);
 
   if (
     !complete ||
@@ -124,53 +165,34 @@ let handleTodo = async (
   icontype,
   itemId
 ) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let isUserId = await checkUserId(userId);
+  try {
+    console.log("id", userId);
+    let isUserId = await db.todos.findOne({ userId: userId });
+    console.log("userId", userId);
+    console.log("isuserId", isUserId);
 
-      if (isUserId) {
-        const respond = await db.todos.insertOne({
-          complete,
-          description,
-          enddate,
-          startday,
-          level,
-          title,
-          userId,
-          type,
-          icontype,
-          itemId,
-        });
-        resolve(respond);
-      } else {
-        reject({ statusCode: 500, message: "User is not exsit!" });
-      }
-    } catch (error) {
-      reject({
-        statusCode: 500,
-        message: " Error: " + error,
+    if (isUserId) {
+      const respond = await db.todos.insertOne({
+        complete,
+        description,
+        enddate,
+        startday,
+        level,
+        title,
+        userId,
+        type,
+        icontype,
+        itemId,
       });
+      return respond;
     }
-  });
-};
-
-let checkUserId = (userIdreq) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.todos.findOne({ userId: userIdreq });
-      if (user) {
-        resolve(user);
-      } else {
-        resolve(false);
-      }
-    } catch (error) {
-      reject(error);
-    }
-  });
+  } catch (error) {
+    res.status(500).json({ message: "Some thing went wrong!" + error });
+  }
 };
 
 //update task
-todoRouter.put("", async (req, res) => {
+todoRouter.put("/", async (req, res) => {
   try {
     const id = req.headers.id;
 
@@ -246,8 +268,6 @@ todoRouter.get("/statistic", async (req, res) => {
 
       percent = (totalListDoneTask / totalTasks) * 100;
       console.log("percent", percent);
-
-      // console.log("Date", endDate);
     }
 
     res.status(200).json({ " Successful": percent });

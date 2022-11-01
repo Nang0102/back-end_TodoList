@@ -5,8 +5,10 @@ const { db } = require("../db");
 
 todoRouter.get("/", async (req, res) => {
   try {
-    const { id, level, enddate, startday, title, type, icontype } = req.headers;
-    const userId = req.headers.userid;
+    const { id, level, enddate, startday, title, type, icontype, userId } =
+      req.body;
+    // const userId = req.body.userId;
+    console.log("reqbody: ", req.body);
     let todo;
     // if (level) {
     //   todo = await db.todos
@@ -166,10 +168,9 @@ let handleTodo = async (
   itemId
 ) => {
   try {
-    console.log("id", userId);
     let isUserId = await db.todos.findOne({ userId: userId });
-    console.log("userId", userId);
-    console.log("isuserId", isUserId);
+    // console.log("userId", userId);
+    // console.log("isuserId", isUserId);
 
     if (isUserId) {
       const respond = await db.todos.insertOne({
@@ -214,8 +215,8 @@ todoRouter.put("/", async (req, res) => {
 //statistic
 todoRouter.get("/statistic", async (req, res) => {
   try {
-    console.log("req.headers: ", req.headers);
-    const userId = req.headers.userid;
+    console.log("req.body: ", req.body);
+    const userId = req.body.userId;
 
     let percent = 0;
 
@@ -225,35 +226,32 @@ todoRouter.get("/statistic", async (req, res) => {
           userId: userId,
         })
         .toArray();
-      // const result = checkUserId.length;
-      // console.log(result);
-      console.log("checkUserId: ", tasks);
+
       const listTasks = [];
       for (let i = 0; i < tasks.length; i++) {
-        console.log("enddateTask: ", tasks[i].enddate);
+        // console.log("enddateTask: ", tasks[i].enddate);
         let endDate = tasks[i].enddate;
-        console.log("enddate: ", endDate);
 
         endDate = new Date(endDate);
         Year = endDate.getFullYear();
         Month = endDate.getMonth() + 1;
-        console.log("year: ", Year);
-        console.log("Month: ", Month);
 
-        const monthReq = req.body.Month;
+        console.log("month", Month);
+
+        const monthReq = req.body.month;
+        console.log("monthReq", monthReq);
+
         const yearReq = req.body.year;
-
-        console.log("monthReq: ", monthReq);
-        console.log("yearReq: ", yearReq);
 
         if (Year == yearReq && Month == monthReq) {
           listTasks.push(tasks[i]);
         }
+        console.log("ListTask: ", listTasks);
       }
-      console.log("listTasks: ", listTasks);
 
       const totalTasks = listTasks.length;
-      console.log("totalTasks: ", totalTasks);
+
+      console.log("totalTask: ", totalTasks);
 
       const listDoneTasks = [];
       for (let i = 0; i < listTasks.length; i++) {
@@ -262,12 +260,12 @@ todoRouter.get("/statistic", async (req, res) => {
           listDoneTasks.push(completeTask);
         }
       }
-      const totalListDoneTask = listDoneTasks.length;
-
       console.log("listDoneTasks: ", listDoneTasks);
 
+      const totalListDoneTask = listDoneTasks.length;
+      console.log("totalListDoneTask: ", totalListDoneTask);
+
       percent = (totalListDoneTask / totalTasks) * 100;
-      console.log("percent", percent);
     }
 
     res.status(200).json({ " Successful": percent });

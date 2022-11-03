@@ -13,9 +13,9 @@ todoRouter.get("/", async (req, res) => {
       title,
       type,
       icontype,
-      userId,
       // listItem,
     } = req.headers;
+    const userId = req.headers.userid;
     // const userId = req.body.userId;
     console.log("reqbody: ", req.headers);
     let todos;

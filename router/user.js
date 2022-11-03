@@ -89,7 +89,7 @@ let handleUserLogin = async (email, password) => {
         if (check) {
           const token = jwt.sign(user, jwtKey);
           console.log("username", user.username);
-          resolve({ token: token, user: user.username, userId: user._id });
+          resolve({ token: token, username: user.username, userId: user._id });
         } else {
           reject({ statusCode: 409, message: "Wrong password!" });
         }

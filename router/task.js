@@ -5,11 +5,20 @@ const { db } = require("../db");
 
 todoRouter.get("/", async (req, res) => {
   try {
-    const { id, level, enddate, startday, title, type, icontype, userId } =
-      req.body;
+    const {
+      id,
+      level,
+      enddate,
+      startday,
+      title,
+      type,
+      icontype,
+      userId,
+      // listItem,
+    } = req.headers;
     // const userId = req.body.userId;
-    console.log("reqbody: ", req.body);
-    let todo;
+    console.log("reqbody: ", req.headers);
+    let todos;
     // if (level) {
     //   todo = await db.todos
     //     .find({
@@ -82,22 +91,25 @@ todoRouter.get("/", async (req, res) => {
       query["userId"] = userId;
     }
 
-    todo = await db.todos.find(query).toArray();
-    if (
-      !level &&
-      !enddate &&
-      !startday &&
-      !type &&
-      !title &&
-      !id &&
-      !icontype &&
-      !userId
-    ) {
-      todo = await db.items.find({}).toArray();
+    todos = await db.todos.find(query).toArray();
+    items = await db.items.find({}).toArray();
+
+    for (let i = 0; i < todos.length; i++) {
+      listItem = [];
+      todoId = todos[i]._id.toString();
+
+      for (let j = 0; j < items.length; j++) {
+        itemId = items[j].taskid;
+
+        if (todoId == itemId) {
+          listItem.push(items[j]);
+        }
+      }
+      todos[i].list_item = listItem;
     }
 
     res.status(200);
-    res.json(todo);
+    res.json(todos);
   } catch (error) {
     res.status(500);
     res.json("some thing went wrong " + error);
@@ -116,7 +128,7 @@ todoRouter.post("/", async (req, res) => {
     userId,
     type,
     icontype,
-    itemId,
+    listitem,
   } = req.body;
   console.log("req:", req.body);
 
@@ -129,8 +141,7 @@ todoRouter.post("/", async (req, res) => {
     !title ||
     !userId ||
     !type ||
-    !icontype ||
-    !itemId
+    !icontype
   ) {
     res.status(500).json("Task creation failed: " + error);
   }
@@ -146,12 +157,12 @@ todoRouter.post("/", async (req, res) => {
       userId,
       type,
       icontype,
-      itemId
+      listitem
     );
     console.log("todoData", todoData);
     res.status(200).json(todoData);
   } catch (error) {
-    res.status(error.statusCode).json({ message: error.message });
+    res.status(error).json({ message: error.message });
   }
 });
 
@@ -165,7 +176,7 @@ let handleTodo = async (
   userId,
   type,
   icontype,
-  itemId
+  listitem
 ) => {
   try {
     let isUserId = await db.todos.findOne({ userId: userId });
@@ -183,14 +194,31 @@ let handleTodo = async (
         userId,
         type,
         icontype,
-        itemId,
+        listitem,
       });
+
+      // let listitem = [];
+      // for (let i = 0; i < tododata.length; i++) {
+      //   listitem.push({ taskid: tododata[i]._id });
+      // }
+
+      // db.todos.insertOne({});
       return respond;
     }
   } catch (error) {
     res.status(500).json({ message: "Some thing went wrong!" + error });
   }
 };
+
+//create api item by id
+
+// todoRouter.post("/", (req, res) => {
+//   try {
+//     const { complete, title, description } = req.body;
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 //update task
 todoRouter.put("/", async (req, res) => {

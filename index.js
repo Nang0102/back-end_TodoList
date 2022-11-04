@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const { connectToDb, db } = require("./db");
 const userRouter = require("./router/user");
 const todoRouter = require("./router/task");
+const itemRouter = require("./router/item");
 const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json({ extended: true }));
@@ -14,6 +15,7 @@ app.get("/", (req, res) => {
 
 app.use("/user", userRouter);
 app.use("/todo", todoRouter);
+app.use("/item", itemRouter);
 
 app.listen(port, () => {
   console.log(`App is on port ${port}`);

@@ -1,7 +1,7 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
-const todoRouter = express.Router();
 const { db } = require("../db");
+const todoRouter = express.Router();
 
 todoRouter.get("/", async (req, res) => {
   try {
@@ -9,7 +9,7 @@ todoRouter.get("/", async (req, res) => {
       id,
       level,
       enddate,
-      startday,
+      startdate,
       title,
       type,
       icontype,
@@ -32,10 +32,10 @@ todoRouter.get("/", async (req, res) => {
     //       enddate: new Date(enddate),
     //     })
     //     .toArray();
-    // } else if (startday) {
+    // } else if (startdate) {
     //   todo = await db.todos
     //     .find({
-    //       startday: new Date(startday),
+    //       startdate: new Date(startdate),
     //     })
     //     .toArray();
     // } else if (id) {
@@ -72,8 +72,8 @@ todoRouter.get("/", async (req, res) => {
     if (enddate) {
       query["enddate"] = enddate;
     }
-    if (startday) {
-      query["startday"] = startday;
+    if (startdate) {
+      query["startdate"] = startdate;
     }
     if (type) {
       query["type"] = type;
@@ -110,6 +110,7 @@ todoRouter.get("/", async (req, res) => {
 
     res.status(200);
     res.json(todos);
+    // res.json(items);
   } catch (error) {
     res.status(500);
     res.json("some thing went wrong " + error);
@@ -122,13 +123,13 @@ todoRouter.post("/", async (req, res) => {
     complete,
     description,
     enddate,
-    startday,
+    startdate,
     level,
     title,
     userId,
     type,
     icontype,
-    listitem,
+    list_item,
   } = req.body;
   console.log("req:", req.body);
 
@@ -136,14 +137,14 @@ todoRouter.post("/", async (req, res) => {
     !complete ||
     !description ||
     !enddate ||
-    !startday ||
+    !startdate ||
     !level ||
     !title ||
     !userId ||
     !type ||
     !icontype
   ) {
-    res.status(500).json("Task creation failed: " + error);
+    res.status(500).json("Task creation failed: ");
   }
 
   try {
@@ -151,18 +152,19 @@ todoRouter.post("/", async (req, res) => {
       complete,
       description,
       enddate,
-      startday,
+      startdate,
       level,
       title,
       userId,
       type,
       icontype,
-      listitem
+      list_item
+      // req.body
     );
     console.log("todoData", todoData);
     res.status(200).json(todoData);
   } catch (error) {
-    res.status(error).json({ message: error.message });
+    res.status(error.statusCode).json({ message: error.message });
   }
 });
 
@@ -170,55 +172,43 @@ let handleTodo = async (
   complete,
   description,
   enddate,
-  startday,
+  startdate,
   level,
   title,
   userId,
   type,
   icontype,
-  listitem
+  list_item
+  // body
 ) => {
   try {
-    let isUserId = await db.todos.findOne({ userId: userId });
-    // console.log("userId", userId);
-    // console.log("isuserId", isUserId);
+    let isUserId = userId;
+    await db.todos.findOne({ userId: userId });
 
+    console.log("userId", isUserId);
+
+    // let items = await db.items.find({}).toArray();
+    // console.log("item", items);
     if (isUserId) {
       const respond = await db.todos.insertOne({
         complete,
         description,
         enddate,
-        startday,
+        startdate,
         level,
         title,
         userId,
         type,
         icontype,
-        listitem,
+        list_item,
       });
 
-      // let listitem = [];
-      // for (let i = 0; i < tododata.length; i++) {
-      //   listitem.push({ taskid: tododata[i]._id });
-      // }
-
-      // db.todos.insertOne({});
       return respond;
     }
   } catch (error) {
-    res.status(500).json({ message: "Some thing went wrong!" + error });
+    error;
   }
 };
-
-//create api item by id
-
-// todoRouter.post("/", (req, res) => {
-//   try {
-//     const { complete, title, description } = req.body;
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// });
 
 //update task
 todoRouter.put("/", async (req, res) => {

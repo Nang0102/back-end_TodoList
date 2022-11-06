@@ -8,17 +8,19 @@ todoRouter.get("/", async (req, res) => {
     const {
       id,
       level,
-      // enddate,
-      startdate,
       title,
       type,
       icontype,
-      // listItem,
+      role,
+      fromdate,
+      todate,
+      fromenddate,
+      toenddate,
     } = req.headers;
     const userId = req.headers.userid;
-    const { fromDate, toDate, fromEndDate, toEndDate } = req.body;
-    // const userId = req.body.userId;
-    console.log("reqbody: ", req.body);
+
+    console.log(req.headers);
+    // const { fromDate, toDate, fromenddate, toenddate } = req.body;
     let todos;
     // if (level) {
     //   todo = await db.todos
@@ -70,23 +72,18 @@ todoRouter.get("/", async (req, res) => {
     if (level) {
       query["level"] = level;
     }
-    if (fromDate && toDate) {
+    if (fromdate && todate) {
       query["startdate"] = {
-        $gte: new Date(req.body.fromDate).toISOString(),
-        $lte: new Date(req.body.toDate).toISOString(),
+        $gte: new Date(req.headers.fromdate).toISOString(),
+        $lte: new Date(req.headers.todate).toISOString(),
       };
     }
-    if (fromEndDate && toEndDate) {
+    if (fromenddate && toenddate) {
       query["enddate"] = {
-        $gte: new Date(req.body.fromEndDate).toISOString(),
-        $lte: new Date(req.body.toEndDate).toISOString(),
+        $gte: new Date(req.headers.fromenddate).toISOString(),
+        $lte: new Date(req.headers.toenddate).toISOString(),
       };
     }
-
-    // console.log("bod:", req.body.fromDate);
-    // console.log(typeof req.body.fromDate);
-    // console.log("date", typeof new Date(req.body.toDate).toISOString());
-
     if (type) {
       query["type"] = type;
     }
@@ -102,11 +99,13 @@ todoRouter.get("/", async (req, res) => {
     if (userId) {
       query["userId"] = userId;
     }
-
-    console.log("query: ", query);
+    if (role) {
+      query["role"] = { role };
+    }
 
     todos = await db.todos.find(query).toArray();
     items = await db.items.find({}).toArray();
+    groups = await db.groups.find({}).toArray();
 
     for (let i = 0; i < todos.length; i++) {
       listItem = [];
@@ -121,7 +120,6 @@ todoRouter.get("/", async (req, res) => {
       }
       todos[i].list_item = listItem;
     }
-    console.log("todos", todos);
     res.status(200);
     res.json(todos);
     // res.json(items);

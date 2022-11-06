@@ -14,6 +14,7 @@ async function connectToDb() {
   db.users = database.collection("User");
   db.todos = database.collection("Task");
   db.items = database.collection("Item");
+  db.groups = database.collection("Group");
   return "done.";
 }
 

@@ -8,7 +8,7 @@ todoRouter.get("/", async (req, res) => {
     const {
       id,
       level,
-      enddate,
+      // enddate,
       startdate,
       title,
       type,
@@ -16,8 +16,9 @@ todoRouter.get("/", async (req, res) => {
       // listItem,
     } = req.headers;
     const userId = req.headers.userid;
+    const { fromDate, toDate, fromEndDate, toEndDate } = req.body;
     // const userId = req.body.userId;
-    console.log("reqbody: ", req.headers);
+    console.log("reqbody: ", req.body);
     let todos;
     // if (level) {
     //   todo = await db.todos
@@ -69,12 +70,23 @@ todoRouter.get("/", async (req, res) => {
     if (level) {
       query["level"] = level;
     }
-    if (enddate) {
-      query["enddate"] = enddate;
+    if (fromDate && toDate) {
+      query["startdate"] = {
+        $gte: new Date(req.body.fromDate).toISOString(),
+        $lte: new Date(req.body.toDate).toISOString(),
+      };
     }
-    if (startdate) {
-      query["startdate"] = startdate;
+    if (fromEndDate && toEndDate) {
+      query["enddate"] = {
+        $gte: new Date(req.body.fromEndDate).toISOString(),
+        $lte: new Date(req.body.toEndDate).toISOString(),
+      };
     }
+
+    // console.log("bod:", req.body.fromDate);
+    // console.log(typeof req.body.fromDate);
+    // console.log("date", typeof new Date(req.body.toDate).toISOString());
+
     if (type) {
       query["type"] = type;
     }
@@ -90,6 +102,8 @@ todoRouter.get("/", async (req, res) => {
     if (userId) {
       query["userId"] = userId;
     }
+
+    console.log("query: ", query);
 
     todos = await db.todos.find(query).toArray();
     items = await db.items.find({}).toArray();
@@ -107,7 +121,7 @@ todoRouter.get("/", async (req, res) => {
       }
       todos[i].list_item = listItem;
     }
-
+    console.log("todos", todos);
     res.status(200);
     res.json(todos);
     // res.json(items);
@@ -116,6 +130,7 @@ todoRouter.get("/", async (req, res) => {
     res.json("some thing went wrong " + error);
   }
 });
+todoRouter.get("/");
 
 // create task
 todoRouter.post("/", async (req, res) => {
@@ -233,8 +248,8 @@ todoRouter.put("/", async (req, res) => {
 //statistic
 todoRouter.get("/statistic", async (req, res) => {
   try {
-    console.log("req.body: ", req.body);
-    const userId = req.body.userId;
+    console.log("req.body: ", req.headers);
+    const userId = req.headers.userid;
 
     let percent = 0;
 

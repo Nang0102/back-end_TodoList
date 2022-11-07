@@ -11,7 +11,6 @@ todoRouter.get("/", async (req, res) => {
       title,
       type,
       icontype,
-      role,
       fromdate,
       todate,
       fromenddate,
@@ -96,16 +95,53 @@ todoRouter.get("/", async (req, res) => {
     if (icontype) {
       query["icontype"] = icontype;
     }
+    // if (userId) {
+    //   query["userId"] = userId
+
+    // }
+
     if (userId) {
-      query["userId"] = userId;
-    }
-    if (role) {
-      query["role"] = { role };
+      const userTask = await db.todos
+        .find({
+          userId: userId,
+        })
+        .toArray();
+      console.log("userTask", userTask);
+      const groups = await db.groups.find({}).toArray();
+      console.log("group", groups);
+
+      for (let k = 0; k < groups.length; k++) {
+        console.log("gr", groups[k].admindUserId);
+        if (userId == groups[k].admindUserId) {
+          todos = [];
+          todos.push(groups[k]);
+          console.log("todos", todos);
+          res.json(todos);
+        } else {
+          todos = userTask;
+          res.json(todos);
+        }
+      }
+
+      // if (userTask) {
+      //   const users = await db.users.find({}).toArray();
+      //   console.log("userRole", users);
+      //   for (let k = 0; k < users.length; k++) {
+      //     console.log("role", users[k].role);
+      //     if (users[k].role === "admin") {
+      //       // const groups = await db.groups.find({});
+      //       // const groups = await db.groups.find({
+      //       //   admindUserId: { $in: listUserId },
+      //       // });
+      //       // console.log("gr", groups);
+      //       // return (todos.listUserId = groups);
+      //     }
+      //   }
+      // }
     }
 
     todos = await db.todos.find(query).toArray();
     items = await db.items.find({}).toArray();
-    groups = await db.groups.find({}).toArray();
 
     for (let i = 0; i < todos.length; i++) {
       listItem = [];
@@ -120,6 +156,7 @@ todoRouter.get("/", async (req, res) => {
       }
       todos[i].list_item = listItem;
     }
+
     res.status(200);
     res.json(todos);
     // res.json(items);
@@ -128,11 +165,10 @@ todoRouter.get("/", async (req, res) => {
     res.json("some thing went wrong " + error);
   }
 });
-todoRouter.get("/");
 
 // create task
 todoRouter.post("/", async (req, res) => {
-  const {
+  const task = ({
     complete,
     description,
     enddate,
@@ -143,7 +179,7 @@ todoRouter.post("/", async (req, res) => {
     type,
     icontype,
     list_item,
-  } = req.body;
+  } = req.body);
   console.log("req:", req.body);
 
   if (
@@ -216,7 +252,19 @@ let handleTodo = async (
         list_item,
       });
 
-      return respond;
+      return {
+        _id: respond.insertedId,
+        complete,
+        description,
+        enddate,
+        startdate,
+        level,
+        title,
+        userId,
+        type,
+        icontype,
+        list_item,
+      };
     }
   } catch (error) {
     error;

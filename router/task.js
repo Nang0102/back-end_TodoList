@@ -15,6 +15,7 @@ todoRouter.get("/", async (req, res) => {
       todate,
       fromenddate,
       toenddate,
+      list_item,
     } = req.headers;
     const userId = req.headers.userid;
 
@@ -102,8 +103,9 @@ todoRouter.get("/", async (req, res) => {
       query["userId"] = userId;
       console.log("userId", userId);
       console.log("querrry", query);
-      const userTask = await db.todos.find(query).toArray();
-      console.log("userTask", userTask);
+      const userTasks = await db.todos.find(query).toArray();
+
+      console.log("userTask", userTasks);
       const allGroups = await db.groups.find({}).toArray();
       console.log("group", allGroups);
       groups = [];
@@ -133,19 +135,31 @@ todoRouter.get("/", async (req, res) => {
           // console.log("user_id", userId);
         }
       }
-      if (groups.length == 0) {
-        console.log("tassk", userTask);
-        todos = userTask;
-        console.log("todo:", todos);
-        return res.status(200).json(todos);
+      let isAdmin = groups.length != 0;
+      if (isAdmin) {
+        return res.status(200).json(list_task);
+      } else {
+        console.log("task", userTasks);
+
+        let listItems = await db.items.find({}).toArray();
+
+        for (a = 0; a < userTasks.length; a++) {
+          let taskId = userTasks[a]._id.toString();
+          // console.log("listItems", listItems);
+          let list_item = [];
+          for (b = 0; b < listItems.length; b++) {
+            // console.log("listItems[b].taskid", listItems[b].taskid);
+            // console.log("userTask[a]._id", taskId);
+
+            if (listItems[b].taskid == taskId) {
+              list_item.push(listItems[b]);
+            }
+          }
+          userTasks[a].list_item = list_item;
+        }
+        console.log("todo:", userTasks);
+        return res.status(200).json(userTasks);
       }
-
-      return res.status(200).json(list_task);
-
-      // if (userId !== groups.admindUserId) {
-      //   todos = userTask;
-      //   res.json(todos);
-      // }
     }
     console.log("query", query);
 

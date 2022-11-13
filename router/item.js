@@ -11,19 +11,14 @@ itemRouter.get("/", async (req, res) => {
 
 //create item
 itemRouter.post("/", async (req, res) => {
-  const { isComplete, titleItem, descriptionItem, taskid } = req.body;
+  const { isComplete, titleItem, taskid } = req.body;
   console.log("check", req.body);
 
-  if (!isComplete || !titleItem || !descriptionItem || !taskid) {
+  if (!isComplete || !titleItem || !taskid) {
     res.status(500).json("Item creation failed: ");
   }
   try {
-    let itemData = await handleItem(
-      isComplete,
-      titleItem,
-      descriptionItem,
-      taskid
-    );
+    let itemData = await handleItem(isComplete, titleItem, taskid);
     console.log("itemData", itemData);
     res.status(200).json(itemData);
   } catch (error) {
@@ -31,7 +26,7 @@ itemRouter.post("/", async (req, res) => {
   }
 });
 
-let handleItem = async (isComplete, titleItem, descriptionItem, taskid) => {
+let handleItem = async (isComplete, titleItem, taskid) => {
   try {
     let isTaskId = taskid;
     await db.items.findOne({ taskid: taskid });
@@ -42,7 +37,6 @@ let handleItem = async (isComplete, titleItem, descriptionItem, taskid) => {
       let list_item = await db.items.insertOne({
         isComplete,
         titleItem,
-        descriptionItem,
         taskid,
       });
       return list_item;

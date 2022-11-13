@@ -19,6 +19,7 @@ todoRouter.get("/", async (req, res) => {
     const userId = req.headers.userid;
 
     console.log(req.headers);
+    // console.log(req.body);
     // const { fromDate, toDate, fromenddate, toenddate } = req.body;
     let todos;
     // if (level) {
@@ -67,6 +68,7 @@ todoRouter.get("/", async (req, res) => {
     //   todo = await db.todos.find({}).toArray();
     //   console.log("todoAr", todo);
     // }
+
     const query = {};
     if (level) {
       query["level"] = level;
@@ -95,50 +97,57 @@ todoRouter.get("/", async (req, res) => {
     if (icontype) {
       query["icontype"] = icontype;
     }
-    // if (userId) {
-    //   query["userId"] = userId
-
-    // }
 
     if (userId) {
-      const userTask = await db.todos
-        .find({
-          userId: userId,
-        })
-        .toArray();
+      query["userId"] = userId;
+      console.log("userId", userId);
+      console.log("querrry", query);
+      const userTask = await db.todos.find(query).toArray();
       console.log("userTask", userTask);
-      const groups = await db.groups.find({}).toArray();
-      console.log("group", groups);
+      const allGroups = await db.groups.find({}).toArray();
+      console.log("group", allGroups);
+      groups = [];
+      list_task = [];
+      for (let k = 0; k < allGroups.length; k++) {
+        console.log("gr", allGroups[k].admindUserId);
+        if (userId == allGroups[k].admindUserId) {
+          groups.push(allGroups[k]);
+        }
+        console.log("groups1", groups);
+        let list_user_id;
+        for (let n = 0; n < groups.length; n++) {
+          list_user_id = groups[n].listUserId;
+          console.log("list_user_id", list_user_id);
 
-      for (let k = 0; k < groups.length; k++) {
-        console.log("gr", groups[k].admindUserId);
-        if (userId == groups[k].admindUserId) {
-          todos = [];
-          todos.push(groups[k]);
-          console.log("todos", todos);
-          res.json(todos);
-        } else {
-          todos = userTask;
-          res.json(todos);
+          for (let m = 0; m < list_user_id.length; m++) {
+            list_task.push(
+              await db.todos
+                .find({
+                  userId: list_user_id[m],
+                })
+                .toArray()
+            );
+            console.log("list_task", list_task);
+          }
+
+          // console.log("user_id", userId);
         }
       }
+      if (groups.length == 0) {
+        console.log("tassk", userTask);
+        todos = userTask;
+        console.log("todo:", todos);
+        return res.status(200).json(todos);
+      }
 
-      // if (userTask) {
-      //   const users = await db.users.find({}).toArray();
-      //   console.log("userRole", users);
-      //   for (let k = 0; k < users.length; k++) {
-      //     console.log("role", users[k].role);
-      //     if (users[k].role === "admin") {
-      //       // const groups = await db.groups.find({});
-      //       // const groups = await db.groups.find({
-      //       //   admindUserId: { $in: listUserId },
-      //       // });
-      //       // console.log("gr", groups);
-      //       // return (todos.listUserId = groups);
-      //     }
-      //   }
+      return res.status(200).json(list_task);
+
+      // if (userId !== groups.admindUserId) {
+      //   todos = userTask;
+      //   res.json(todos);
       // }
     }
+    console.log("query", query);
 
     todos = await db.todos.find(query).toArray();
     items = await db.items.find({}).toArray();
@@ -156,9 +165,9 @@ todoRouter.get("/", async (req, res) => {
       }
       todos[i].list_item = listItem;
     }
+    console.log("tos", todos);
+    return res.status(200).json(todos);
 
-    res.status(200);
-    res.json(todos);
     // res.json(items);
   } catch (error) {
     res.status(500);
@@ -178,7 +187,7 @@ todoRouter.post("/", async (req, res) => {
     userId,
     type,
     icontype,
-    list_item,
+    listItems,
   } = req.body);
   console.log("req:", req.body);
 
@@ -206,9 +215,7 @@ todoRouter.post("/", async (req, res) => {
       title,
       userId,
       type,
-      icontype,
-      list_item
-      // req.body
+      icontype
     );
     console.log("todoData", todoData);
     res.status(200).json(todoData);
@@ -226,18 +233,13 @@ let handleTodo = async (
   title,
   userId,
   type,
-  icontype,
-  list_item
-  // body
+  icontype
 ) => {
   try {
     let isUserId = userId;
     await db.todos.findOne({ userId: userId });
 
     console.log("userId", isUserId);
-
-    // let items = await db.items.find({}).toArray();
-    // console.log("item", items);
     if (isUserId) {
       const respond = await db.todos.insertOne({
         complete,
@@ -249,10 +251,23 @@ let handleTodo = async (
         userId,
         type,
         icontype,
-        list_item,
       });
 
-      return {
+      const taskId = respond.insertedId.toString();
+      console.log("task id: ", taskId);
+      const list_item = [];
+
+      if (taskId && listItems) {
+        for (let q = 0; q < listItems.length; q++) {
+          listItems[q].taskid = taskId;
+          list_item.push(listItems[q]);
+          console.log("list_item ", list_item);
+        }
+        const resultItem = await db.items.insertMany(list_item);
+        console.log("resultitem", resultItem);
+        // return itemsWithTaskId
+      }
+      const task = {
         _id: respond.insertedId,
         complete,
         description,
@@ -263,7 +278,15 @@ let handleTodo = async (
         userId,
         type,
         icontype,
-        list_item,
+      };
+      console.log("tas", task);
+      const item = { list_item };
+      console.log("it", item);
+
+      const result = { ...task, ...item };
+
+      return {
+        result,
       };
     }
   } catch (error) {

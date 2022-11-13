@@ -74,48 +74,40 @@ userRouter.post("/login", async (req, res) => {
     let userData = await handleUserLogin(email, password);
     console.log("user", userData);
     res.status(200).json(userData);
-    // res.redirect("/");
   } catch (error) {
     res.status(error.statusCode).json({ message: error.message });
   }
 });
 
 let handleUserLogin = async (email, password) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await checkUserEmail(email);
-      if (user) {
-        let check = await bcrypt.compareSync(password, user.password);
-        if (check) {
-          const token = jwt.sign(user, jwtKey);
-          console.log("username", user.username);
-          resolve({ token: token, username: user.username, userId: user._id });
-        } else {
-          reject({ statusCode: 409, message: "Wrong password!" });
-        }
+  try {
+    let user = await checkUserEmail(email);
+    if (user) {
+      let check = await bcrypt.compareSync(password, user.password);
+      if (check) {
+        const token = jwt.sign(user, jwtKey);
+        console.log("username", user.username);
+
+        return { token: token, username: user.username, userId: user._id };
       }
-    } catch (e) {
-      reject({
-        statusCode: 500,
-        message: " Error",
-      });
     }
-  });
+  } catch (e) {
+    return {
+      statusCode: 500,
+      message: " Error",
+    };
+  }
 };
 
-let checkUserEmail = (userEmail) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.users.findOne({ email: userEmail });
-      if (user) {
-        resolve(user);
-      } else {
-        resolve(false);
-      }
-    } catch (error) {
-      reject({ statusCode: 401, message: "Email is not existed!" });
+let checkUserEmail = async (userEmail) => {
+  try {
+    let user = await db.users.findOne({ email: userEmail });
+    if (user) {
+      return user;
     }
-  });
+  } catch (error) {
+    return { statusCode: 401, message: "Email is not existed!" };
+  }
 };
 
 // get the

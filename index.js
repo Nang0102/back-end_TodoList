@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const { connectToDb, db } = require("./db");
 const userRouter = require("./router/user");
 const todoRouter = require("./router/task");
-const itemRouter = require("./router/item");
+let itemRouter = require("./router/item");
 const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json({ extended: true }));

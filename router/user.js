@@ -50,7 +50,12 @@ let handleUserSignup = async (email, username, password, role) => {
             role,
           });
           delete password;
-          resolve(respond);
+          resolve({
+            username: username,
+            password: hash,
+            role: role,
+            email: email,
+          });
         });
       } else {
         reject({ statusCode: 409, message: "Email is already in use" });
@@ -58,37 +63,59 @@ let handleUserSignup = async (email, username, password, role) => {
     } catch (error) {
       reject({
         statusCode: 500,
-        message: " Error",
+        message: " Some thing went wrong!",
       });
     }
   });
 };
 userRouter.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
+  const { email, password, fromWeb } = req.body;
+  console.log("req.body", req.body);
+  if (!email || !password || !fromWeb) {
     res.status(401).json({
       message: "Login failed",
     });
   }
   try {
-    let userData = await handleUserLogin(email, password);
-    console.log("user", userData);
+    let userData = await handleUserLogin(email, password, fromWeb);
+    console.log("userdata", userData);
     res.status(200).json(userData);
   } catch (error) {
     res.status(error.statusCode).json({ message: error.message });
   }
 });
 
-let handleUserLogin = async (email, password) => {
+let handleUserLogin = async (email, password, fromWeb) => {
   try {
     let user = await checkUserEmail(email);
     if (user) {
       let check = await bcrypt.compareSync(password, user.password);
+      console.log("check", check);
       if (check) {
         const token = jwt.sign(user, jwtKey);
-        console.log("username", user.username);
-
-        return { token: token, username: user.username, userId: user._id };
+        const userRole = user.role;
+        if (userRole == "admin") {
+          return {
+            token: token,
+            username: user.username,
+            userId: user._id,
+            role: user.role,
+            email: user.email,
+          };
+        } else if (userRole == "user" && fromWeb == "false") {
+          return {
+            token: token,
+            username: user.username,
+            userId: user._id,
+            role: user.role,
+            email: user.email,
+          };
+        } else {
+          return {
+            statusCode: 500,
+            message: "Some thing went wrong.",
+          };
+        }
       }
     }
   } catch (e) {
@@ -103,6 +130,7 @@ let checkUserEmail = async (userEmail) => {
   try {
     let user = await db.users.findOne({ email: userEmail });
     if (user) {
+      console.log("users", user);
       return user;
     }
   } catch (error) {

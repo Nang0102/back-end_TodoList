@@ -274,12 +274,14 @@ let handleTodo = async (
       if (taskId && listItems) {
         for (let q = 0; q < listItems.length; q++) {
           listItems[q].taskid = taskId;
+          // list_item.push((listItems[q].isComplete = "No"));
+          // console.log("list_item[q].isComplete", listItems[q].isComplete);
+
           list_item.push(listItems[q]);
           console.log("list_item ", list_item);
         }
         const resultItem = await db.items.insertMany(list_item);
         console.log("resultitem", resultItem);
-        // return itemsWithTaskId
       }
       const task = {
         _id: respond.insertedId,

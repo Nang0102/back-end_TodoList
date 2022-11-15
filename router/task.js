@@ -275,10 +275,7 @@ let handleTodo = async (
         for (let q = 0; q < listItems.length; q++) {
           listItems[q].taskid = taskId;
           // list_item.push((listItems[q].isComplete = "No"));
-          // console.log("list_item[q].isComplete", listItems[q].isComplete);
-
           list_item.push(listItems[q]);
-          console.log("list_item ", list_item);
         }
         const resultItem = await db.items.insertMany(list_item);
         console.log("resultitem", resultItem);
@@ -295,11 +292,11 @@ let handleTodo = async (
         type,
         icontype,
       };
-      console.log("tas", task);
       const item = { list_item };
       console.log("it", item);
 
       const result = { ...task, ...item };
+      console.log("result", result);
 
       return {
         result,

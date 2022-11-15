@@ -141,7 +141,7 @@ let checkUserEmail = async (userEmail) => {
 // get the
 
 userRouter.get("/", async (req, res) => {
-  const result = await db.users.find({}).toArray();
+  const result = await db.users.find({}).project({ password: 0 }).toArray();
 
   if (!result) {
     res.json({
@@ -187,20 +187,6 @@ userRouter.get("/login/:id", async (req, res) => {
     });
   }
 });
-
-// userRouter.get("/", async (req, res) => {
-//   try {
-//     const {username, DateOfBirth, profession,email } = req.headers
-//     let user
-//     if(user){
-//       user = await db.users.find({email:email}).toArray()
-//     } else if(username){
-
-//     }
-//   } catch (error) {
-//     res.status(500).json("Error: " + error)
-//   }
-// });
 
 //get the
 userRouter.put("/", async (req, res) => {

@@ -52,7 +52,8 @@ uploadRouter.post("/upload", cpUpload, async (req, res) => {
 });
 uploadRouter.get(
   "/upload",
-  express.static(path.join(__dirname, "../uploads")),
+  // express.static(path.join(__dirname, "../uploads")),
+  // express.static("../uploads"),
   async (req, res) => {
     const id = req.headers.id;
     const respond = await db.users.find({ _id: new ObjectId(id) }).toArray();

@@ -20,8 +20,8 @@ const storage = multer.diskStorage({
     req["fileName"] = fileName;
     // req["filePath"] = `/upload/${fileName}`;
 
-    // req["filePath"] = `https://backendtodo123.herokuapp.com/upload/${fileName}`;
-    req["filePath"] = ` http://localhost:5000/upload/${fileName}`;
+    req["filePath"] = `https://backendtodo123.herokuapp.com/upload/${fileName}`;
+    // req["filePath"] = ` http://localhost:5000/upload/${fileName}`;
     cb(null, fileName);
   },
 });

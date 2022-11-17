@@ -101,25 +101,17 @@ todoRouter.get("/", async (req, res) => {
 
     if (userId) {
       query["userId"] = userId;
-      console.log("userId", userId);
-      console.log("querrry", query);
       const userTasks = await db.todos.find(query).toArray();
-
-      console.log("userTask", userTasks);
       const allGroups = await db.groups.find({}).toArray();
-      console.log("group", allGroups);
       groups = [];
       list_task = [];
       for (let k = 0; k < allGroups.length; k++) {
-        console.log("gr", allGroups[k].admindUserId);
         if (userId == allGroups[k].admindUserId) {
           groups.push(allGroups[k]);
         }
-        console.log("groups1", groups);
         let list_user_id;
         for (let n = 0; n < groups.length; n++) {
           list_user_id = groups[n].listUserId;
-          console.log("list_user_id", list_user_id);
 
           for (let m = 0; m < list_user_id.length; m++) {
             list_task.push(
@@ -129,39 +121,28 @@ todoRouter.get("/", async (req, res) => {
                 })
                 .toArray()
             );
-            console.log("list_task", list_task);
           }
-
-          // console.log("user_id", userId);
         }
       }
       let isAdmin = groups.length != 0;
       if (isAdmin) {
         return res.status(200).json(list_task);
       } else {
-        console.log("task", userTasks);
-
         let listItems = await db.items.find({}).toArray();
 
         for (a = 0; a < userTasks.length; a++) {
           let taskId = userTasks[a]._id.toString();
-          // console.log("listItems", listItems);
           let list_item = [];
           for (b = 0; b < listItems.length; b++) {
-            // console.log("listItems[b].taskid", listItems[b].taskid);
-            // console.log("userTask[a]._id", taskId);
-
             if (listItems[b].taskid == taskId) {
               list_item.push(listItems[b]);
             }
           }
           userTasks[a].list_item = list_item;
         }
-        console.log("todo:", userTasks);
         return res.status(200).json(userTasks);
       }
     }
-    console.log("query", query);
 
     todos = await db.todos.find(query).toArray();
     items = await db.items.find({}).toArray();
@@ -179,7 +160,6 @@ todoRouter.get("/", async (req, res) => {
       }
       todos[i].list_item = listItem;
     }
-    console.log("tos", todos);
     return res.status(200).json(todos);
 
     // res.json(items);
@@ -203,7 +183,6 @@ todoRouter.post("/", async (req, res) => {
     icontype,
     listItems,
   } = req.body);
-  console.log("req:", req.body);
 
   if (
     !complete ||
@@ -231,7 +210,6 @@ todoRouter.post("/", async (req, res) => {
       type,
       icontype
     );
-    console.log("todoData", todoData);
     res.status(200).json(todoData);
   } catch (error) {
     res.status(error.statusCode).json({ message: error.message });
@@ -253,7 +231,6 @@ let handleTodo = async (
     let isUserId = userId;
     await db.todos.findOne({ userId: userId });
 
-    console.log("userId", isUserId);
     if (isUserId) {
       const respond = await db.todos.insertOne({
         complete,
@@ -268,7 +245,6 @@ let handleTodo = async (
       });
 
       const taskId = respond.insertedId.toString();
-      console.log("task id: ", taskId);
       const list_item = [];
 
       if (taskId && listItems) {
@@ -278,7 +254,6 @@ let handleTodo = async (
           list_item.push(listItems[q]);
         }
         const resultItem = await db.items.insertMany(list_item);
-        console.log("resultitem", resultItem);
       }
       const task = {
         _id: respond.insertedId,
@@ -293,10 +268,8 @@ let handleTodo = async (
         icontype,
       };
       const item = { list_item };
-      console.log("it", item);
 
       const result = { ...task, ...item };
-      console.log("result", result);
 
       return {
         result,
@@ -330,7 +303,6 @@ todoRouter.put("/", async (req, res) => {
 //statistic
 todoRouter.get("/statistic", async (req, res) => {
   try {
-    console.log("req.body: ", req.headers);
     const userId = req.headers.userid;
 
     let percent = 0;
@@ -344,29 +316,22 @@ todoRouter.get("/statistic", async (req, res) => {
 
       const listTasks = [];
       for (let i = 0; i < tasks.length; i++) {
-        // console.log("enddateTask: ", tasks[i].enddate);
         let endDate = tasks[i].enddate;
 
         endDate = new Date(endDate);
         Year = endDate.getFullYear();
         Month = endDate.getMonth() + 1;
 
-        console.log("month", Month);
-
         const monthReq = req.body.month;
-        console.log("monthReq", monthReq);
 
         const yearReq = req.body.year;
 
         if (Year == yearReq && Month == monthReq) {
           listTasks.push(tasks[i]);
         }
-        console.log("ListTask: ", listTasks);
       }
 
       const totalTasks = listTasks.length;
-
-      console.log("totalTask: ", totalTasks);
 
       const listDoneTasks = [];
       for (let i = 0; i < listTasks.length; i++) {
@@ -375,11 +340,8 @@ todoRouter.get("/statistic", async (req, res) => {
           listDoneTasks.push(completeTask);
         }
       }
-      console.log("listDoneTasks: ", listDoneTasks);
 
       const totalListDoneTask = listDoneTasks.length;
-      console.log("totalListDoneTask: ", totalListDoneTask);
-
       percent = (totalListDoneTask / totalTasks) * 100;
     }
 

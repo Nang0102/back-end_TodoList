@@ -13,7 +13,7 @@ userRouter.post("/sign-up", async (req, res) => {
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
       email
     );
-  console.log("body ", req.body);
+  "body ", req.body;
 
   if (!email || !username || !password) {
     return res.status(500).json({

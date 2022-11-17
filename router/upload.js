@@ -51,7 +51,7 @@ uploadRouter.post("/upload", cpUpload, async (req, res) => {
   }
 });
 uploadRouter.get(
-  "/upload",
+  "/avatar",
   // express.static(path.join(__dirname, "../uploads")),
   // express.static("../uploads"),
   async (req, res) => {

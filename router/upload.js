@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
     // req["filePath"] = `/upload/${fileName}`;
 
     // req["filePath"] = `https://backendtodo123.herokuapp.com/upload/${fileName}`;
-    req["filePath"] = `http://localhost:5000/user/upload/${fileName}`;
+    req["filePath"] = ` http://localhost:5000/upload/${fileName}`;
     cb(null, fileName);
   },
 });
@@ -50,17 +50,11 @@ uploadRouter.post("/upload", cpUpload, async (req, res) => {
     res.status(500).json("Can Please upload a file!");
   }
 });
-uploadRouter.get(
-  "/avatar",
-  // express.static(path.join(__dirname, "../uploads")),
-  // express.static("../uploads"),
-  async (req, res) => {
-    const id = req.headers.id;
-    const respond = await db.users.find({ _id: new ObjectId(id) }).toArray();
-    console.log("avatar", respond);
+uploadRouter.get("/avatar", async (req, res) => {
+  const id = req.headers.id;
+  const respond = await db.users.find({ _id: new ObjectId(id) }).toArray();
 
-    res.status(200).json({ avatar: respond[0].avatar });
-  }
-);
+  res.status(200).json({ avatar: respond[0].avatar });
+});
 
 module.exports = uploadRouter;

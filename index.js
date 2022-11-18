@@ -17,6 +17,7 @@ app.use("/upload", express.static("uploads"));
 app.use("/user", userRouter, uploadRouter);
 app.use("/todo", todoRouter);
 app.use("/item", itemRouter);
+app.use('/uploads', express.static('uploads'))
 
 app.listen(port, () => {
   console.log(`App is on port ${port}`);

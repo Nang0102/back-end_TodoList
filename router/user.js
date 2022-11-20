@@ -116,6 +116,11 @@ let handleUserLogin = async (email, password, fromWeb) => {
             message: "Some thing went wrong.",
           };
         }
+      } else {
+        return {
+          statusCode: 500,
+          message: "Some thing went wrong.",
+        };
       }
     }
   } catch (e) {
@@ -132,6 +137,8 @@ let checkUserEmail = async (userEmail) => {
     if (user) {
       console.log("users", user);
       return user;
+    } else {
+      return { statusCode: 401, message: "Email is not existed!" };
     }
   } catch (error) {
     return { statusCode: 401, message: "Email is not existed!" };

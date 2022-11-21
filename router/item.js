@@ -65,4 +65,27 @@ itemRouter.put("/:id", async (req, res) => {
   }
 });
 
+itemRouter.delete("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    let respond;
+    if (id) {
+      respond = await db.items.deleteOne({ _id: new ObjectId(id) });
+      console.log("res", respond);
+
+      if (respond.acknowledged) {
+        res.json(`Successfully delete ${respond.deletedCount}`);
+        return;
+      } else {
+        res.json(respond);
+        return;
+      }
+    } else {
+      return res.status(400).json("Id is missing");
+    }
+  } catch (error) {
+    res.status(500).json("Some thing went wrong " + error);
+  }
+});
+
 module.exports = itemRouter;

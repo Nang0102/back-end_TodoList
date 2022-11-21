@@ -300,6 +300,27 @@ todoRouter.put("/", async (req, res) => {
   }
 });
 
+todoRouter.delete("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    let respond;
+    if (id) {
+      respond = await db.todos.deleteOne({ _id: new ObjectId(id) });
+      if (respond.acknowledged) {
+        res.json(`Successfully delete ${respond.deletedCount}`);
+        return;
+      }
+      res.json(respond);
+      return;
+    } else {
+      res.status(400).json("Id is missing");
+      return;
+    }
+  } catch (error) {
+    res.status(500).json("Some thing went wrong " + error);
+  }
+});
+
 //statistic
 todoRouter.get("/statistic", async (req, res) => {
   try {

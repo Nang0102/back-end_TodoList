@@ -19,7 +19,6 @@ todoRouter.get("/", async (req, res) => {
     } = req.headers;
     const userId = req.headers.userid;
 
-    console.log(req.headers);
     // console.log(req.body);
     // const { fromDate, toDate, fromenddate, toenddate } = req.body;
     let todos;
@@ -246,15 +245,6 @@ let handleTodo = async (
 
       const taskId = respond.insertedId.toString();
       const list_item = [];
-
-      if (taskId && listItems) {
-        for (let q = 0; q < listItems.length; q++) {
-          listItems[q].taskid = taskId;
-          // list_item.push((listItems[q].isComplete = "No"));
-          list_item.push(listItems[q]);
-        }
-        const resultItem = await db.items.insertMany(list_item);
-      }
       const task = {
         _id: respond.insertedId,
         complete,
@@ -267,6 +257,15 @@ let handleTodo = async (
         type,
         icontype,
       };
+
+      if (taskId && listItems) {
+        for (let q = 0; q < listItems.length; q++) {
+          listItems[q].taskid = taskId;
+          list_item.push(listItems[q]);
+        }
+        const resultItem = await db.items.insertMany(list_item);
+      }
+
       const item = { list_item };
 
       const result = { ...task, ...item };
@@ -303,9 +302,18 @@ todoRouter.put("/", async (req, res) => {
 todoRouter.delete("/:id", async (req, res) => {
   try {
     const id = req.params.id;
+    const Tasks = await db.todos.findOne({ _id: new ObjectId(id) });
+    const Items = await db.items.find({}).toArray();
     let respond;
+    let result;
     if (id) {
+      for (let i = 0; i < Items.length; i++) {
+        if (Items[i].taskid == id && Tasks.type == "priority") {
+          result = await db.items.deleteOne({ taskid: Items[i].taskid });
+        }
+      }
       respond = await db.todos.deleteOne({ _id: new ObjectId(id) });
+
       if (respond.acknowledged) {
         res.json(`Successfully delete ${respond.deletedCount}`);
         return;

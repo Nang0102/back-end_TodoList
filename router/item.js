@@ -12,7 +12,6 @@ itemRouter.get("/", async (req, res) => {
 //create item
 itemRouter.post("/", async (req, res) => {
   const { isComplete, titleItem, taskid } = req.body;
-  console.log("check", req.body);
 
   if (!isComplete || !titleItem || !taskid) {
     res.status(500).json("Item creation failed: ");
@@ -30,9 +29,7 @@ let handleItem = async (isComplete, titleItem, taskid) => {
   try {
     let isTaskId = taskid;
     await db.items.findOne({ taskid: taskid });
-    console.log("taskid", taskid);
 
-    console.log("istaskid", isTaskId);
     if (isTaskId) {
       let list_item = await db.items.insertOne({
         isComplete,

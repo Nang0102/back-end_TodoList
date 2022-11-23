@@ -93,6 +93,10 @@ let handleUserLogin = async (email, password, fromWeb) => {
       console.log("check", check);
       if (check) {
         const token = jwt.sign(user, jwtKey);
+        // const groups = await db.groups.find({}).toArray()
+        // for(let i=0; i<groups.length; i++){
+
+        // }
         const userRole = user.role;
         if (userRole == "admin") {
           return {
@@ -148,7 +152,36 @@ let checkUserEmail = async (userEmail) => {
 // get the
 
 userRouter.get("/", async (req, res) => {
-  const result = await db.users.find({}).project({ password: 0 }).toArray();
+  const { username, avatar, email, groupid } = req.headers;
+  console.log("rew", req.headers);
+  const query = {};
+  if (username) {
+    query["username"] = username;
+  }
+  if (avatar) {
+    query["avatar"] = avatar;
+  }
+  if (email) {
+    query["email"] = email;
+  }
+  if (groupid) {
+    // const group = await db.users
+    //   .aggregate([
+    //     {
+    //       $lookup: {
+    //         from: "Group",
+    //         localField: "groupid",
+    //         foreignField: "_id",
+    //         as: "group",
+    //       },
+    //     },
+    //   ])
+    //   .toArray();
+    // console.log("group", group);
+  }
+  // const _id = new Object(id)
+
+  const result = await db.users.find(query).project({ password: 0 }).toArray();
 
   if (!result) {
     res.json({
@@ -156,11 +189,7 @@ userRouter.get("/", async (req, res) => {
       message: "Không có dữ liệu",
     });
   } else {
-    res.json({
-      status: "SUCCESS",
-      message: "Lấy được dữ liệu",
-      data: result,
-    });
+    res.json(result);
   }
 });
 

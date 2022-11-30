@@ -365,7 +365,11 @@ todoRouter.get("/statistic", async (req, res) => {
       const listDoneTasks = [];
       for (let i = 0; i < listTasks.length; i++) {
         let completeTask = listTasks[i].complete;
-        if (completeTask === "Yes") {
+        let text = "Yes";
+        if (
+          completeTask === text.toLocaleLowerCase() ||
+          completeTask === text
+        ) {
           listDoneTasks.push(completeTask);
         }
       }

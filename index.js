@@ -6,7 +6,6 @@ const userRouter = require("./router/user");
 const uploadRouter = require("./router/upload");
 const todoRouter = require("./router/task");
 let itemRouter = require("./router/item");
-const filterRouter = require("./router/filter");
 const port = process.env.PORT || 5000;
 const cors = require("cors");
 
@@ -21,7 +20,6 @@ app.use("/upload", express.static("uploads"));
 app.use("/user", userRouter, uploadRouter);
 app.use("/todo", todoRouter);
 app.use("/item", itemRouter);
-app.use("/text", filterRouter);
 
 app.listen(port, () => {
   console.log(`App is on port ${port}`);

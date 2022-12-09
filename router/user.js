@@ -1,6 +1,6 @@
 const express = require("express");
 const userRouter = express.Router();
-const { ObjectId } = require("mongodb");
+const { ObjectId, Logger } = require("mongodb");
 const { db } = require("../db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -149,6 +149,28 @@ let checkUserEmail = async (userEmail) => {
   }
 };
 
+//post
+
+userRouter.post("/", async (req, res) => {
+  const { username, avatar, email, role } = req.body;
+
+  try {
+    if (role === "admin") {
+      const respond = await db.users.insertOne({
+        username,
+        avatar,
+        email,
+        role,
+      });
+      res.status(200).json(respond);
+    } else {
+      res.json("Not authentication!");
+    }
+  } catch (error) {
+    res.json(error);
+  }
+});
+
 // get the
 
 userRouter.get("/", async (req, res) => {
@@ -225,15 +247,17 @@ userRouter.get("/login/:id", async (req, res) => {
 });
 
 //get the
-userRouter.put("/", async (req, res) => {
-  const id = req.headers.id;
+userRouter.put("/:id", async (req, res) => {
+  const id = req.params.id;
   const body = req.body;
+  // console.log("body", req.body);
   const filter = {
     _id: new ObjectId(id),
   };
   const updateDoc = {
     $set: body,
   };
+  console.log("updateDoc", updateDoc);
 
   const result = await db.users.updateOne(filter, updateDoc, { upsert: true });
 

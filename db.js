@@ -12,6 +12,7 @@ async function connectToDb() {
     const database = client.db(dbName);
 
     db.users = database.collection("User");
+    db.User = database.collection("User");
     db.todos = database.collection("Task");
     db.Task = database.collection("Task");
     db.items = database.collection("Item");

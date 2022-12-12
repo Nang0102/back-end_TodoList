@@ -26,6 +26,13 @@ app.use("/item", itemRouter);
 app.use("/Task", TaskRouter);
 app.use("/TaiKhoan", TaiKhoanRouter);
 
+app.post('/Login', async(req, res) => {
+    console.log(req.body)
+    const respond = await db.User.findOne(req.body)
+    res.status(200)
+    res.json(respond)
+})
+
 app.listen(port, () => {
     console.log(`App is on port ${port}`);
     connectToDb();

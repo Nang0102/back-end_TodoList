@@ -346,21 +346,24 @@ todoRouter.get("/statistic", async (req, res) => {
       const listTasks = [];
       for (let i = 0; i < tasks.length; i++) {
         let endDate = tasks[i].enddate;
-
+        console.log("endDate", endDate);
         endDate = new Date(endDate);
         Year = endDate.getFullYear();
-        Month = endDate.getMonth() + 1;
+        // Month = endDate.getMonth() + 1;
 
-        const monthReq = req.body.month;
+        // const monthReq = req.body.month;
 
         const yearReq = req.body.year;
 
-        if (Year == yearReq && Month == monthReq) {
+        if (Year == yearReq) {
+          // && Month == monthReq)
           listTasks.push(tasks[i]);
         }
       }
+      console.log("listTasks", listTasks);
 
       const totalTasks = listTasks.length;
+      console.log("totalTasks", totalTasks);
 
       const listDoneTasks = [];
       for (let i = 0; i < listTasks.length; i++) {
@@ -372,6 +375,7 @@ todoRouter.get("/statistic", async (req, res) => {
         ) {
           listDoneTasks.push(completeTask);
         }
+        console.log("listDoneTasks", listDoneTasks);
       }
 
       const totalListDoneTask = listDoneTasks.length;

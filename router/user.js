@@ -174,8 +174,8 @@ userRouter.post("/", async (req, res) => {
 // get the
 
 userRouter.get("/", async (req, res) => {
-  const { username, avatar, email, groupid } = req.headers;
-  console.log("rew", req.headers);
+  const { username, avatar, email, groupid } = req.body;
+  console.log("rew", req.body);
   const query = {};
   if (username) {
     query["username"] = username;
@@ -187,19 +187,21 @@ userRouter.get("/", async (req, res) => {
     query["email"] = email;
   }
   if (groupid) {
-    // const group = await db.users
-    //   .aggregate([
-    //     {
-    //       $lookup: {
-    //         from: "Group",
-    //         localField: "groupid",
-    //         foreignField: "_id",
-    //         as: "group",
-    //       },
-    //     },
-    //   ])
-    //   .toArray();
+    query["groupid"] = groupid;
+    const group = await db.users
+      .aggregate([
+        {
+          $lookup: {
+            from: "Group",
+            localField: "groupid",
+            foreignField: "_id",
+            as: "groups",
+          },
+        },
+      ])
+      .toArray();
     // console.log("group", group);
+    return res.json(group);
   }
   // const _id = new Object(id)
 

@@ -173,7 +173,7 @@ userRouter.post("/", async (req, res) => {
 
 // get the
 
-userRouter.get("/", async (req, res) => {
+userRouter.get("/abc", async (req, res) => {
   const { username, avatar, email, groupid } = req.body;
   console.log("rew", req.body);
   const query = {};
@@ -187,7 +187,7 @@ userRouter.get("/", async (req, res) => {
     query["email"] = email;
   }
   if (groupid) {
-    query["groupid"] = groupid;
+    // query["groupid"] = groupid;
     const group = await db.users
       .aggregate([
         {
@@ -200,7 +200,22 @@ userRouter.get("/", async (req, res) => {
         },
       ])
       .toArray();
-    // console.log("group", group);
+    console.log("group1", group.length);
+    console.log("group", group[2].groups[0].name);
+    let Nhom = [];
+    console.log("group1", group.length);
+    let groupSize = group.length;
+    for (let i = 0; i++; i < groupSize) {
+      console.log("gr", group[i].username);
+      Nhom.push(group[i].groups);
+      console.log("groups", Nhom);
+      let NameGroup = [];
+      for (let j = 0; j++; j < Nhom.length) {
+        NameGroup.push(Nhom[j].name);
+        console.log("name", NameGroup);
+        return NameGroup;
+      }
+    }
     return res.json(group);
   }
   // const _id = new Object(id)
@@ -213,6 +228,7 @@ userRouter.get("/", async (req, res) => {
       message: "Không có dữ liệu",
     });
   } else {
+    console.log("result", result);
     res.json(result);
   }
 });
@@ -281,7 +297,8 @@ userRouter.delete("/:id", async (req, res) => {
   const id = req.params.id;
   const body = req.body;
   const filter = {
-    Idchu: id,
+    // Idchu: id,
+    _id: ObjectId(id),
   };
   const updateDoc = {
     $set: body,

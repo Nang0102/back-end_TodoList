@@ -173,7 +173,7 @@ userRouter.post("/", async (req, res) => {
 
 // get the
 
-userRouter.get("/abc", async (req, res) => {
+userRouter.get("/", async (req, res) => {
   const { username, avatar, email, groupid } = req.body;
   console.log("rew", req.body);
   const query = {};

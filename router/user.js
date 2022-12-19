@@ -287,7 +287,7 @@ userRouter.put("/:id", async (req, res) => {
   } else {
     res.json({
       status: "SUCCESS",
-      message: "Lấy được dữ liệu",
+      message: "Update Success!",
       data: result,
     });
   }
@@ -313,7 +313,7 @@ userRouter.delete("/:id", async (req, res) => {
   } else {
     res.json({
       status: "SUCCESS",
-      message: "Lấy được dữ liệu",
+      message: "Deleted!",
       data: result,
     });
   }

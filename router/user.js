@@ -268,7 +268,7 @@ userRouter.get("/login/:id", async (req, res) => {
 userRouter.put("/:id", async (req, res) => {
   const id = req.params.id;
   const body = req.body;
-  // console.log("body", req.body);
+  console.log("body", req.body);
   const filter = {
     _id: new ObjectId(id),
   };

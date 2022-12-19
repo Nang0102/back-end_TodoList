@@ -18,6 +18,7 @@ const storage = multer.diskStorage({
     const fileName = file.fieldname + "-" + uniqueSuffix + fileType;
     req["fileName"] = fileName;
     req["filePath"] = `https://backendtodolist.onrender.com/upload/${fileName}`;
+    // req["filePath"] = `http://localhost:5000/upload/${fileName}`;
     cb(null, fileName);
   },
 });
@@ -41,6 +42,7 @@ uploadRouter.post("/upload", cpUpload, async (req, res) => {
     const respond = await db.users.insertOne({ avatar: path });
     const respondUpdateAvatar = await db.users.updateOne(filter, updateDoc);
     if (respondUpdateAvatar.modifiedCount > 0 && respond.acknowledged) {
+      console.log("respond", respond);
       res.status(201).json(respond);
     }
   } else {

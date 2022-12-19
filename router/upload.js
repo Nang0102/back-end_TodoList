@@ -17,8 +17,8 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const fileName = file.fieldname + "-" + uniqueSuffix + fileType;
     req["fileName"] = fileName;
-    // req["filePath"] = `https://backendtodolist.onrender.com/upload/${fileName}`;
-    req["filePath"] = `http://localhost:5000/upload/${fileName}`;
+    req["filePath"] = `https://backendtodolist.onrender.com/upload/${fileName}`;
+    // req["filePath"] = `http://localhost:5000/upload/${fileName}`;
     cb(null, fileName);
   },
 });

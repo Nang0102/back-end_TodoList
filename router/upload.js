@@ -17,8 +17,8 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const fileName = file.fieldname + "-" + uniqueSuffix + fileType;
     req["fileName"] = fileName;
-    req["filePath"] = `https://backendtodolist.onrender.com/upload/${fileName}`;
-    // req["filePath"] = `http://localhost:5000/upload/${fileName}`;
+    // req["filePath"] = `https://backendtodolist.onrender.com/upload/${fileName}`;
+    req["filePath"] = `http://localhost:5000/upload/${fileName}`;
     cb(null, fileName);
   },
 });
@@ -49,6 +49,33 @@ uploadRouter.post("/upload", cpUpload, async (req, res) => {
     res.status(500).json("Can Please upload a file!");
   }
 });
+
+uploadRouter.put("/upload/:id", cpUpload, async (req, res) => {
+  const id = req.params.id;
+  const path = req["filePath"];
+  console.log("path", path);
+
+  const filter = {
+    _id: new ObjectId(id),
+  };
+  const updateDoc = {
+    $set: {
+      avatar: path,
+    },
+  };
+
+  if (path) {
+    const respond = await db.users.insertOne({ avatar: path });
+    const respondUpdateAvatar = await db.users.updateOne(filter, updateDoc);
+    if (respondUpdateAvatar.modifiedCount > 0 && respond.acknowledged) {
+      console.log("respond", respond);
+      res.status(201).json(respond);
+    }
+  } else {
+    res.status(500).json("Can Please upload a file!");
+  }
+});
+
 uploadRouter.get("/avatar", async (req, res) => {
   const id = req.headers.id;
   const respond = await db.users.find({ _id: new ObjectId(id) }).toArray();

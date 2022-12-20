@@ -13,7 +13,7 @@ userRouter.post("/sign-up", async (req, res) => {
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
       email
     );
-  "body ", req.body;
+  console.log("body ", req.body);
 
   if (!email || !username || !password) {
     return res.status(500).json({
@@ -30,6 +30,7 @@ userRouter.post("/sign-up", async (req, res) => {
 
   try {
     let userData = await handleUserSignup(email, username, password, role);
+    console.log("userData", userData);
     res.status(200).json(userData);
   } catch (error) {
     res.status(error.statusCode).json({ message: error.message });
@@ -39,27 +40,30 @@ userRouter.post("/sign-up", async (req, res) => {
 let handleUserSignup = async (email, username, password, role) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let isExist = await checkUserEmail(email);
-      if (!isExist) {
-        const saltRounds = 10;
-        await bcrypt.hash(password, saltRounds, async function (err, hash) {
-          const respond = await db.users.insertOne({
-            email,
-            username,
-            password: hash,
-            role,
-          });
-          delete password;
-          resolve({
-            username: username,
-            password: hash,
-            role: role,
-            email: email,
-          });
+      // let isExist = await checkUserEmail(email);
+      // let isExist = await db.users.findOne({ email: userEmail });
+      // console.log("isExist", isExist);
+      // if (!isExist) {
+      const saltRounds = 10;
+      await bcrypt.hash(password, saltRounds, async function (err, hash) {
+        const respond = await db.users.insertOne({
+          email,
+          username,
+          password: hash,
+          role,
         });
-      } else {
-        reject({ statusCode: 409, message: "Email is already in use" });
-      }
+        delete password;
+        return resolve({
+          username: username,
+          password: hash,
+          role: role,
+          email: email,
+        });
+      });
+      console.log("resolve", resolve);
+      // } else {
+      //   reject({ statusCode: 409, message: "Email is already in use" });
+      // }
     } catch (error) {
       reject({
         statusCode: 500,
@@ -93,10 +97,6 @@ let handleUserLogin = async (email, password, fromWeb) => {
       console.log("check", check);
       if (check) {
         const token = jwt.sign(user, jwtKey);
-        // const groups = await db.groups.find({}).toArray()
-        // for(let i=0; i<groups.length; i++){
-
-        // }
         const userRole = user.role;
         if (userRole == "admin") {
           return {
@@ -138,11 +138,14 @@ let handleUserLogin = async (email, password, fromWeb) => {
 let checkUserEmail = async (userEmail) => {
   try {
     let user = await db.users.findOne({ email: userEmail });
-    if (user) {
+    console.log("email", userEmail);
+    console.log("users1", user);
+
+    if (!user || user == null) {
+      return { statusCode: 401, message: "Email is not existed!" };
+    } else {
       console.log("users", user);
       return user;
-    } else {
-      return { statusCode: 401, message: "Email is not existed!" };
     }
   } catch (error) {
     return { statusCode: 401, message: "Email is not existed!" };

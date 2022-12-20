@@ -75,7 +75,17 @@ uploadRouter.put("/upload/:id", cpUpload, async (req, res) => {
     res.status(500).json("Can Please upload a file!");
   }
 });
-
+uploadRouter.delete("/avatar/:id", async (req, res) => {
+  const id = req.params.id;
+  const respond = await db.users.deleteOne({ _id: new ObjectId(id) });
+  if (!respond) {
+    res.json({
+      status: "FAILED",
+      message: "Can not delete!",
+    });
+  }
+  res.status(200).json(respond);
+});
 uploadRouter.get("/avatar", async (req, res) => {
   const id = req.headers.id;
   const respond = await db.users.find({ _id: new ObjectId(id) }).toArray();

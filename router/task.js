@@ -1,6 +1,8 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 const { db } = require("../db");
+const moment = require("moment");
+
 const todoRouter = express.Router();
 
 todoRouter.get("/", async (req, res) => {
@@ -334,8 +336,7 @@ todoRouter.get("/statistic", async (req, res) => {
   try {
     const userId = req.headers.userid;
 
-    let percent = 0;
-
+    responseData = [];
     if (userId) {
       const tasks = await db.todos
         .find({
@@ -343,46 +344,106 @@ todoRouter.get("/statistic", async (req, res) => {
         })
         .toArray();
 
+      function formatMyDate(date) {
+        let splitData = date.split("-");
+        let formatMyDate =
+          splitData[0] +
+          "-" +
+          splitData[1].padStart(2, "0") +
+          "-" +
+          splitData[2];
+        return formatMyDate;
+      }
+
       const listTasks = [];
       for (let i = 0; i < tasks.length; i++) {
         let endDate = tasks[i].enddate;
-        console.log("endDate", endDate);
-        endDate = new Date(endDate);
-        Year = endDate.getFullYear();
-        // Month = endDate.getMonth() + 1;
+        // console.log("endDatetask", endDate);
+        // console.log("TypeendDatetask", typeof endDate);
+
+        let format = formatMyDate(endDate);
+        endDateFormat = new Date(format);
+        // console.log("endDate", endDateFormat);
+
+        Year = endDateFormat.getFullYear();
+        Month = endDateFormat.getMonth() + 1;
+        // console.log("Month", Month);
 
         // const monthReq = req.body.month;
 
         const yearReq = req.body.year;
-
         if (Year == yearReq) {
           // && Month == monthReq)
           listTasks.push(tasks[i]);
         }
       }
-      console.log("listTasks", listTasks);
+      // console.log("listTasks", listTasks);
 
-      const totalTasks = listTasks.length;
-      console.log("totalTasks", totalTasks);
+      // let checkListMonthTask = [];
+      for (let month = 1; month <= 12; month++) {
+        monthData = {
+          month: month,
+        };
 
-      const listDoneTasks = [];
-      for (let i = 0; i < listTasks.length; i++) {
-        let completeTask = listTasks[i].complete;
-        let text = "Yes";
-        if (
-          completeTask === text.toLocaleLowerCase() ||
-          completeTask === text
-        ) {
-          listDoneTasks.push(completeTask);
-        }
-        console.log("listDoneTasks", listDoneTasks);
+        let totalTasksMonth = listTasks.filter(function (task) {
+          endateTask = task.enddate;
+          formatDate = formatMyDate(endateTask);
+          endateTaskFormat = new Date(formatDate);
+          return endateTaskFormat.getMonth() + 1 == month;
+        });
+
+        let completeTasksMonth = totalTasksMonth.filter(function (task) {
+          return task.complete.toLocaleLowerCase() == "yes";
+        });
+        monthData.completeTasks = completeTasksMonth.length;
+        monthData.totalTasks = totalTasksMonth.length;
+        monthData.percentMonth =
+          (monthData.completeTasks / monthData.totalTasks) * 100;
+        responseData.push(monthData);
       }
 
-      const totalListDoneTask = listDoneTasks.length;
-      percent = (totalListDoneTask / totalTasks) * 100;
+      // console.log("checkListMonthTask", checkListMonthTask);
+
+      // const totalMonthTasks = checkListMonthTask.length;
+      // console.log("totalMonthTasks", totalMonthTasks);
+
+      // const totalTasks = listTasks.length;
+      // console.log("totalTasks", totalTasks);
+
+      // const listDoneMonthTasks = [];
+      // for (let i = 0; i < checkListMonthTask.length; i++) {
+      //   let completeTask = checkListMonthTask[i].complete;
+      //   let text = "Yes";
+      //   if (
+      //     completeTask === text.toLocaleLowerCase() ||
+      //     completeTask === text
+      //   ) {
+      //     listDoneMonthTasks.push(completeTask);
+      //   }
+      // }
+      // console.log("listDoneMonthTasks", listDoneMonthTasks);
+
+      // const listDoneTasks = [];
+      // for (let i = 0; i < listTasks.length; i++) {
+      //   let completeTask = listTasks[i].complete;
+      //   let text = "Yes";
+      //   if (
+      //     completeTask === text.toLocaleLowerCase() ||
+      //     completeTask === text
+      //   ) {
+      //     listDoneTasks.push(completeTask);
+      //   }
+      //   console.log("listDoneTasks", listDoneTasks);
+      // }
+
+      // const totalListDoneMonthTask = listDoneMonthTasks.length;
+      // const totalListDoneTask = listDoneTasks.length;
+
+      // percent = (totalListDoneMonthTask / totalMonthTasks) * 100;
+      // percentTotal = (totalListDoneTask / totalTasks) * 100;
     }
 
-    res.status(200).json({ " Successful": percent });
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json("Some thing went wrong: " + error);
   }

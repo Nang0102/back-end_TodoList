@@ -78,7 +78,8 @@ TaskRouter.get("/c/:userId", async (req, res) => {
 TaskRouter.get("/:id", async (req, res) => {
   const id = req.params.id;
   const result = await db.Task.findOne({
-    _id: new ObjectId(id),
+    // _id: new ObjectId(id),
+    userId: id,
   });
   console.log("res", result);
   if (!result) {

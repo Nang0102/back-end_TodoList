@@ -86,8 +86,8 @@ uploadRouter.delete("/avatar/:id", async (req, res) => {
   }
   res.status(200).json(respond);
 });
-uploadRouter.get("/avatar", async (req, res) => {
-  const id = req.headers.id;
+uploadRouter.get("/avatar/:id", async (req, res) => {
+  const id = req.params.id;
   const respond = await db.users.find({ _id: new ObjectId(id) }).toArray();
 
   res.status(200).json({ avatar: respond[0].avatar });

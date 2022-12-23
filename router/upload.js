@@ -69,7 +69,9 @@ uploadRouter.put("/upload/:id", cpUpload, async (req, res) => {
     const respondUpdateAvatar = await db.users.updateOne(filter, updateDoc);
     if (respondUpdateAvatar.modifiedCount > 0 && respond.acknowledged) {
       console.log("respond", respond);
-      res.status(201).json({ avatar: path });
+      res
+        .status(201)
+        .json({ status: "SUCCESS", message: `Update Successful!` });
     }
   } else {
     res.status(500).json("Can Please upload a file!");
